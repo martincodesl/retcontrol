@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── BARBERIA ──────────────────────────────────────────────
+model Barberia {
+  id          String   @id @default(cuid())
+  nombre      String
+  subdominio  String   @unique
+  slogan      String?
+  descripcion String?
+  direccion   String?
+  telefono    String?
+  email       String   @unique
+  password    String
+  plan        Plan     @default(STARTER)
+  activa      Boolean  @default(true)
+  creadaEn    DateTime @default(now())
+
+  barberos  Barbero[]
+  servicios Servicio[]
+  turnos    Turno[]
+}
+
+// ── BARBERO ───────────────────────────────────────────────
+model Barbero {
+  id          String   @id @default(cuid())
+  nombre      String
+  especialidad String?
+  foto        String?
+  activo      Boolean  @default(true)
+  creadoEn    DateTime @default(now())
+
+  barberiaId  String
+  barberia    Barberia @relation(fields: [barberiaId], references: [id])
+
+  horarios    Horario[]
+  turnos      Turno[]
+}
+
+// ── HORARIO ───────────────────────────────────────────────
+model Horario {
+  id        String  @id @default(cuid())
+  diaSemana Int     // 0=Lunes, 6=Domingo
+  desde     String  // "09:00"
+  hasta     String  // "18:00"
+  activo    Boolean @default(true)
+
+  barberoId String
+  barbero   Barbero @relation(fields: [barberoId], references: [id])
+}
+
+// ── SERVICIO ──────────────────────────────────────────────
+model Servicio {
+  id          String  @id @default(cuid())
+  nombre      String
+  descripcion String?
+  precio      Int     // en centavos, ej: 250000 = $2.500
+  duracion    Int     // en minutos
+  color       String  @default("#C9A84C")
+  activo      Boolean @default(true)
+
+  barberiaId  String
+  barberia    Barberia @relation(fields: [barberiaId], references: [id])
+
+  turnos      Turno[]
+}
+
+// ── TURNO ─────────────────────────────────────────────────
+model Turno {
+  id             String      @id @default(cuid())
+  fecha          DateTime
+  estado         EstadoTurno @default(PENDIENTE)
+  clienteNombre  String
+  clienteEmail   String
+  clienteTelefono String?
+  notas          String?
+  creadoEn       DateTime    @default(now())
+
+  barberiaId  String
+  barberia    Barberia @relation(fields: [barberiaId], references: [id])
+
+  barberoId   String
+  barbero     Barbero  @relation(fields: [barberoId], references: [id])
+
+  servicioId  String
+  servicio    Servicio @relation(fields: [servicioId], references: [id])
+}
+
+// ── ENUMS ─────────────────────────────────────────────────
+enum Plan {
+  STARTER
+  PRO
+  PREMIUM
+}
+
+enum EstadoTurno {
+  PENDIENTE
+  CONFIRMADO
+  EN_CURSO
+  COMPLETADO
+  CANCELADO
+}
