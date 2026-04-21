@@ -62,9 +62,9 @@ export async function POST(req: NextRequest) {
     });
 
   } catch (error) {
-    console.error("Error en registro:", error);
+    console.error("Error en registro:", JSON.stringify(error, null, 2));
     return NextResponse.json(
-      { error: "Error interno del servidor" },
+      { error: "Error interno del servidor", detalle: String(error) },
       { status: 500 }
     );
   }
