@@ -1,71 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import bcrypt from "bcryptjs";
 
 export async function POST(req: NextRequest) {
   try {
-    const { nombre, subdominio, email, password, telefono, plan } = await req.json();
+    const body = await req.json();
+    
+    // Test 1: Ver si llega el body
+    console.log("Body recibido:", body);
+    
+    // Test 2: Ver si Prisma se puede importar
+    const { prisma } = await import("@/lib/prisma");
+    console.log("Prisma importado OK");
+    
+    // Test 3: Ver si la DB responde
+    const count = await prisma.barberia.count();
+    console.log("DB responde OK, count:", count);
+    
+    // Test 4: Ver si bcrypt funciona
+    const bcrypt = await import("bcryptjs");
+    const hash = await bcrypt.hash("test", 10);
+    console.log("bcrypt OK:", hash.slice(0, 10));
 
-    // Validaciones básicas
-    if (!nombre || !subdominio || !email || !password) {
-      return NextResponse.json(
-        { error: "Faltan campos obligatorios" },
-        { status: 400 }
-      );
-    }
-
-    // Verificar que el subdominio no esté tomado
-    const subdominioExistente = await prisma.barberia.findUnique({
-      where: { subdominio },
-    });
-    if (subdominioExistente) {
-      return NextResponse.json(
-        { error: "El subdominio ya está en uso" },
-        { status: 400 }
-      );
-    }
-
-    // Verificar que el email no esté registrado
-    const emailExistente = await prisma.barberia.findUnique({
-      where: { email },
-    });
-    if (emailExistente) {
-      return NextResponse.json(
-        { error: "El email ya está registrado" },
-        { status: 400 }
-      );
-    }
-
-    // Hashear la contraseña
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Crear la barbería
-    const barberia = await prisma.barberia.create({
-      data: {
-        nombre,
-        subdominio: subdominio.toLowerCase().trim(),
-        email,
-        password: hashedPassword,
-        telefono: telefono || null,
-        plan: plan || "STARTER",
-      },
-    });
-
-    return NextResponse.json({
-      ok: true,
-      barberia: {
-        id: barberia.id,
-        nombre: barberia.nombre,
-        subdominio: barberia.subdominio,
-        email: barberia.email,
-      },
-    });
-
+    return NextResponse.json({ ok: true, count });
+    
   } catch (error) {
-    console.error("Error en registro:", JSON.stringify(error, null, 2));
-    return NextResponse.json(
-      { error: "Error interno del servidor", detalle: String(error) },
-      { status: 500 }
-    );
+    console.error("ERROR DETALLADO:", error);
+    return NextResponse.json({
+      error: String(error),
+      stack: error instanceof Error ? error.stack : "no stack",
+    }, { status: 500 });
   }
 }
