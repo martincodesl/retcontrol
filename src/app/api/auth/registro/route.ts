@@ -1,13 +1,65 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import bcrypt from "bcryptjs";
 
 export async function POST(req: NextRequest) {
   try {
-    const count = await prisma.barberia.count();
-    return NextResponse.json({ ok: true, count });
-  } catch (error) {
+    const { nombre, subdominio, email, password, telefono, plan } = await req.json();
+
+    if (!nombre || !subdominio || !email || !password) {
+      return NextResponse.json(
+        { error: "Faltan campos obligatorios" },
+        { status: 400 }
+      );
+    }
+
+    const subdominioExistente = await prisma.barberia.findUnique({
+      where: { subdominio },
+    });
+    if (subdominioExistente) {
+      return NextResponse.json(
+        { error: "El subdominio ya esta en uso" },
+        { status: 400 }
+      );
+    }
+
+    const emailExistente = await prisma.barberia.findUnique({
+      where: { email },
+    });
+    if (emailExistente) {
+      return NextResponse.json(
+        { error: "El email ya esta registrado" },
+        { status: 400 }
+      );
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const barberia = await prisma.barberia.create({
+      data: {
+        nombre,
+        subdominio: subdominio.toLowerCase().trim(),
+        email,
+        password: hashedPassword,
+        telefono: telefono || null,
+        plan: plan || "STARTER",
+      },
+    });
+
     return NextResponse.json({
-      error: String(error),
-    }, { status: 500 });
+      ok: true,
+      barberia: {
+        id: barberia.id,
+        nombre: barberia.nombre,
+        subdominio: barberia.subdominio,
+        email: barberia.email,
+      },
+    });
+
+  } catch (error) {
+    return NextResponse.json(
+      { error: String(error) },
+      { status: 500 }
+    );
   }
 }
