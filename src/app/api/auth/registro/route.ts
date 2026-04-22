@@ -1,5 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
-  return NextResponse.json({ ok: true, mensaje: "llegue al handler" });
+  try {
+    const count = await prisma.barberia.count();
+    return NextResponse.json({ ok: true, count });
+  } catch (error) {
+    return NextResponse.json({
+      error: String(error),
+    }, { status: 500 });
+  }
 }
