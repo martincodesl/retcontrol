@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 
-// GET — obtener perfil
 export async function GET() {
   try {
     const session = await auth();
@@ -32,35 +31,27 @@ export async function GET() {
   }
 }
 
-// PATCH — actualizar perfil
-export async function GET() {
+export async function PATCH(req: NextRequest) {
   try {
     const session = await auth();
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    console.log("Session user id:", session.user.id);
-    console.log("Session completa:", JSON.stringify(session));
+    const { nombre, slogan, descripcion, direccion, telefono } = await req.json();
 
-    const barberia = await prisma.barberia.findUnique({
+    const barberia = await prisma.barberia.update({
       where: { id: session.user.id },
-      select: {
-        id: true,
-        nombre: true,
-        subdominio: true,
-        slogan: true,
-        descripcion: true,
-        direccion: true,
-        telefono: true,
-        email: true,
-        plan: true,
+      data: {
+        nombre:      nombre      || undefined,
+        slogan:      slogan      || undefined,
+        descripcion: descripcion || undefined,
+        direccion:   direccion   || undefined,
+        telefono:    telefono    || undefined,
       },
     });
 
-    console.log("Barberia encontrada:", barberia);
-
-    return NextResponse.json({ barberia });
+    return NextResponse.json({ ok: true, barberia });
   } catch (error) {
     console.error("Error:", error);
     return NextResponse.json({ error: "Error interno" }, { status: 500 });
