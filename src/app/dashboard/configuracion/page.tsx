@@ -1,20 +1,96 @@
 "use client";
 
-import { useState } from "react";
-import { Globe, Bell, Calendar, CreditCard, Shield } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Globe, Bell, Calendar, CreditCard, Shield, Save } from "lucide-react";
+
+interface Barberia {
+  nombre: string;
+  slogan: string;
+  descripcion: string;
+  direccion: string;
+  telefono: string;
+  subdominio: string;
+  plan: string;
+}
 
 export default function ConfiguracionPage() {
+  const [barberia, setBarberia] = useState<Barberia | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [guardando, setGuardando] = useState(false);
+  const [guardado, setGuardado] = useState(false);
   const [recordatorios, setRecordatorios] = useState(true);
   const [confirmManual, setConfirmManual] = useState(false);
   const [turnosOnline, setTurnosOnline] = useState(true);
+  const [form, setForm] = useState({
+    nombre: "",
+    slogan: "",
+    descripcion: "",
+    direccion: "",
+    telefono: "",
+  });
+
+  useEffect(() => {
+    const cargar = async () => {
+      try {
+        const res = await fetch("/api/barberia/perfil");
+        const data = await res.json();
+        if (data.barberia) {
+          setBarberia(data.barberia);
+          setForm({
+            nombre: data.barberia.nombre || "",
+            slogan: data.barberia.slogan || "",
+            descripcion: data.barberia.descripcion || "",
+            direccion: data.barberia.direccion || "",
+            telefono: data.barberia.telefono || "",
+          });
+        }
+      } catch {
+        console.error("Error al cargar barberia");
+      } finally {
+        setLoading(false);
+      }
+    };
+    cargar();
+  }, []);
+
+  const guardar = async () => {
+    setGuardando(true);
+    try {
+      const res = await fetch("/api/barberia/perfil", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (res.ok) {
+        setGuardado(true);
+        setTimeout(() => setGuardado(false), 3000);
+      }
+    } catch {
+      console.error("Error al guardar");
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="dash-content">
+        <div style={{ padding: "3rem", textAlign: "center", color: "rgba(255,255,255,0.3)" }}>
+          Cargando...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="dash-content">
 
-      {/* Topbar */}
       <div className="dash-topbar">
         <div className="dash-topbar-title">Configuracion</div>
-        <button className="dash-topbar-btn">Guardar cambios</button>
+        <button className="dash-topbar-btn" onClick={guardar} disabled={guardando}>
+          <Save size={14} style={{ display: "inline", marginRight: 4 }} />
+          {guardando ? "Guardando..." : guardado ? "Guardado ✓" : "Guardar cambios"}
+        </button>
       </div>
 
       <div className="config-layout">
@@ -25,6 +101,7 @@ export default function ConfiguracionPage() {
             <Globe size={16} color="var(--gold)" />
             Mi Sitio Publico
           </div>
+
           <div style={{
             background: "rgba(46,204,113,0.08)",
             border: "1px solid rgba(46,204,113,0.2)",
@@ -36,7 +113,7 @@ export default function ConfiguracionPage() {
             <div>
               <div style={{ fontWeight: 600, fontSize: "0.9rem" }}>Tu sitio esta online</div>
               <div style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.4)", fontFamily: "monospace" }}>
-                kings-cuts.retcontrol.app
+                {barberia?.subdominio}.retcontrol.app
               </div>
             </div>
           </div>
@@ -44,19 +121,38 @@ export default function ConfiguracionPage() {
           <div className="config-fields">
             <div className="config-field">
               <label className="config-label">Nombre del negocio</label>
-              <input className="config-input" defaultValue="King's Cuts" />
+              <input
+                className="config-input"
+                value={form.nombre}
+                onChange={(e) => setForm({ ...form, nombre: e.target.value })}
+              />
             </div>
             <div className="config-field">
               <label className="config-label">Slogan</label>
-              <input className="config-input" defaultValue="Tu estilo, nuestra pasion" />
+              <input
+                className="config-input"
+                value={form.slogan}
+                onChange={(e) => setForm({ ...form, slogan: e.target.value })}
+                placeholder="Tu estilo, nuestra pasion"
+              />
             </div>
             <div className="config-field">
               <label className="config-label">Direccion</label>
-              <input className="config-input" defaultValue="Av. Corrientes 1234, CABA" />
+              <input
+                className="config-input"
+                value={form.direccion}
+                onChange={(e) => setForm({ ...form, direccion: e.target.value })}
+                placeholder="Av. Corrientes 1234, CABA"
+              />
             </div>
             <div className="config-field">
               <label className="config-label">WhatsApp</label>
-              <input className="config-input" defaultValue="+54 11 4567-8900" />
+              <input
+                className="config-input"
+                value={form.telefono}
+                onChange={(e) => setForm({ ...form, telefono: e.target.value })}
+                placeholder="+54 11 1234-5678"
+              />
             </div>
           </div>
 
@@ -64,7 +160,9 @@ export default function ConfiguracionPage() {
             <label className="config-label">Descripcion</label>
             <textarea
               className="config-input config-textarea"
-              defaultValue="Barberia premium en el corazon de Buenos Aires. Especialistas en fade, diseno de barba y cortes modernos."
+              value={form.descripcion}
+              onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
+              placeholder="Contales a tus clientes quienes son..."
             />
           </div>
         </div>
@@ -75,7 +173,6 @@ export default function ConfiguracionPage() {
             <Bell size={16} color="var(--gold)" />
             Notificaciones
           </div>
-
           <div className="config-toggle-item">
             <div>
               <div className="config-toggle-label">Recordatorios automaticos</div>
@@ -88,10 +185,9 @@ export default function ConfiguracionPage() {
               <div className="config-toggle-knob" />
             </div>
           </div>
-
           <div className="config-toggle-item">
             <div>
-              <div className="config-toggle-label">Confirmacion manual de turnos</div>
+              <div className="config-toggle-label">Confirmacion manual</div>
               <div className="config-toggle-desc">Debas aprobar cada reserva antes de confirmarla</div>
             </div>
             <div
@@ -101,7 +197,6 @@ export default function ConfiguracionPage() {
               <div className="config-toggle-knob" />
             </div>
           </div>
-
           <div className="config-toggle-item">
             <div>
               <div className="config-toggle-label">Turnos online activos</div>
@@ -124,12 +219,12 @@ export default function ConfiguracionPage() {
           </div>
           <div className="config-horarios">
             {[
-              { dia: "Lunes",     desde: "09:00", hasta: "20:00", activo: true },
-              { dia: "Martes",    desde: "09:00", hasta: "20:00", activo: true },
-              { dia: "Miercoles", desde: "09:00", hasta: "20:00", activo: true },
-              { dia: "Jueves",    desde: "09:00", hasta: "20:00", activo: true },
-              { dia: "Viernes",   desde: "09:00", hasta: "20:00", activo: true },
-              { dia: "Sabado",    desde: "09:00", hasta: "17:00", activo: true },
+              { dia: "Lunes",     desde: "09:00", hasta: "20:00", activo: true  },
+              { dia: "Martes",    desde: "09:00", hasta: "20:00", activo: true  },
+              { dia: "Miercoles", desde: "09:00", hasta: "20:00", activo: true  },
+              { dia: "Jueves",    desde: "09:00", hasta: "20:00", activo: true  },
+              { dia: "Viernes",   desde: "09:00", hasta: "20:00", activo: true  },
+              { dia: "Sabado",    desde: "09:00", hasta: "17:00", activo: true  },
               { dia: "Domingo",   desde: "",       hasta: "",      activo: false },
             ].map((h) => (
               <div key={h.dia} className="config-horario-row">
@@ -156,15 +251,22 @@ export default function ConfiguracionPage() {
           </div>
           <div className="config-plan">
             <div className="config-plan-info">
-              <div className="config-plan-name">Plan Pro</div>
-              <div className="config-plan-price">$25 USD / mes</div>
-              <div className="config-plan-next">Proximo cobro: 1 de agosto 2025</div>
+              <div className="config-plan-name">Plan {barberia?.plan}</div>
+              <div className="config-plan-price">
+                {barberia?.plan === "STARTER" ? "$15" : barberia?.plan === "PRO" ? "$25" : "$40"} USD / mes
+              </div>
+              <div className="config-plan-next">Administra tu suscripcion desde el panel de pagos</div>
             </div>
             <button className="barbero-btn-outline">Cambiar plan</button>
           </div>
           <div className="config-plan-features">
-            {["Hasta 5 barberos", "Subdominio propio", "Turnos online ilimitados", "Notificaciones por email"].map((f) => (
-              <div key={f} className="config-plan-feat">
+            {[
+              barberia?.plan === "STARTER" ? "Hasta 2 barberos" : barberia?.plan === "PRO" ? "Hasta 5 barberos" : "Barberos ilimitados",
+              "Subdominio propio",
+              "Turnos online ilimitados",
+              barberia?.plan !== "STARTER" ? "Notificaciones por email" : null,
+            ].filter(Boolean).map((f) => (
+              <div key={f!} className="config-plan-feat">
                 <Shield size={12} color="var(--gold)" />
                 {f}
               </div>
