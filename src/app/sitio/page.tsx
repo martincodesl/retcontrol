@@ -1,285 +1,232 @@
-"use client";
+import { MapPin, Clock, Phone, AtSign, Star } from "lucide-react";
+import Link from "next/link";
 
-import { useState, useEffect } from "react";
-import { Globe, Bell, Calendar, CreditCard, Shield, Save } from "lucide-react";
+const servicios = [
+  { nombre: "Corte Clasico", desc: "Tijera y maquina, acabado prolijo.", precio: "$2.500", duracion: "30 min", color: "#3498DB" },
+  { nombre: "Corte + Barba", desc: "Corte a eleccion mas diseno de barba completo.", precio: "$3.800", duracion: "45 min", color: "#C9A84C" },
+  { nombre: "Degrade / Fade", desc: "Degradado a piel con acabado perfecto.", precio: "$3.200", duracion: "40 min", color: "#2ECC71" },
+  { nombre: "Diseno de Barba", desc: "Perfilado y diseno con navaja.", precio: "$1.800", duracion: "25 min", color: "#9B59B6" },
+  { nombre: "Color / Mechas", desc: "Coloracion completa o mechas a eleccion.", precio: "$6.500", duracion: "90 min", color: "#E74C3C" },
+];
 
-interface Barberia {
-  nombre: string;
-  slogan: string;
-  descripcion: string;
-  direccion: string;
-  telefono: string;
-  subdominio: string;
-  plan: string;
-}
+const barberos = [
+  { initials: "RV", name: "Rodrigo Vega",    spec: "Fade & Beard Specialist", rating: "4.9", reviews: 182, color: "#3498DB" },
+  { initials: "ML", name: "Marcos Lopez",    spec: "Corte Clasico",            rating: "4.7", reviews: 140, color: "#C9A84C" },
+  { initials: "PG", name: "Pablo Gimenez",   spec: "Fade & Corte Moderno",    rating: "4.8", reviews: 165, color: "#2ECC71" },
+  { initials: "DM", name: "Diego Martinez",  spec: "Diseno & Color",           rating: "4.6", reviews: 98,  color: "#9B59B6" },
+];
 
-export default function ConfiguracionPage() {
-  const [barberia, setBarberia] = useState<Barberia | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [guardando, setGuardando] = useState(false);
-  const [guardado, setGuardado] = useState(false);
-  const [recordatorios, setRecordatorios] = useState(true);
-  const [confirmManual, setConfirmManual] = useState(false);
-  const [turnosOnline, setTurnosOnline] = useState(true);
-  const [form, setForm] = useState({
-    nombre: "",
-    slogan: "",
-    descripcion: "",
-    direccion: "",
-    telefono: "",
-  });
+const horarios = [
+  { dia: "Lunes a Viernes", hours: "9:00 - 20:00" },
+  { dia: "Sabados",         hours: "9:00 - 17:00" },
+  { dia: "Domingos",        hours: "Cerrado" },
+];
 
-  useEffect(() => {
-    const cargar = async () => {
-      try {
-        const res = await fetch("/api/barberia/perfil");
-        const data = await res.json();
-        if (data.barberia) {
-          setBarberia(data.barberia);
-          setForm({
-            nombre: data.barberia.nombre || "",
-            slogan: data.barberia.slogan || "",
-            descripcion: data.barberia.descripcion || "",
-            direccion: data.barberia.direccion || "",
-            telefono: data.barberia.telefono || "",
-          });
-        }
-      } catch {
-        console.error("Error al cargar barberia");
-      } finally {
-        setLoading(false);
-      }
-    };
-    cargar();
-  }, []);
-
-  const guardar = async () => {
-    setGuardando(true);
-    try {
-      const res = await fetch("/api/barberia/perfil", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      if (res.ok) {
-        setGuardado(true);
-        setTimeout(() => setGuardado(false), 3000);
-      }
-    } catch {
-      console.error("Error al guardar");
-    } finally {
-      setGuardando(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="dash-content">
-        <div style={{ padding: "3rem", textAlign: "center", color: "rgba(255,255,255,0.3)" }}>
-          Cargando...
-        </div>
-      </div>
-    );
-  }
-
+export default function SitioPage() {
   return (
-    <div className="dash-content">
+    <div className="sitio-wrapper">
 
-      {/* Topbar */}
-      <div className="dash-topbar">
-        <div className="dash-topbar-title">Configuracion</div>
-        <button
-          className="dash-topbar-btn"
-          onClick={guardar}
-          disabled={guardando}
-        >
-          <Save size={14} style={{ display: "inline", marginRight: 4 }} />
-          {guardando ? "Guardando..." : guardado ? "Guardado ✓" : "Guardar cambios"}
-        </button>
-      </div>
+      {/* NAV */}
+      <nav className="sitio-nav">
+        <div className="sitio-nav-logo">
+          <em>King's</em> Cuts
+        </div>
+        <div className="sitio-nav-links">
+          <Link href="#servicios">Servicios</Link>
+          <Link href="#equipo">Equipo</Link>
+          <Link href="#ubicacion">Ubicacion</Link>
+        </div>
+        <Link href="#reserva" className="sitio-nav-cta">
+          Reservar turno
+        </Link>
+      </nav>
 
-      <div className="config-layout">
-
-        {/* Mi Sitio */}
-        <div className="dash-panel">
-          <div className="config-section-title">
-            <Globe size={16} color="var(--gold)" />
-            Mi Sitio Publico
+      {/* HERO */}
+      <section className="sitio-hero">
+        <div className="sitio-hero-bg" />
+        <div className="sitio-hero-deco">✂</div>
+        <div className="sitio-hero-content">
+          <div className="sitio-hero-tag">Barberia Premium · Buenos Aires</div>
+          <h1 className="sitio-hero-title">
+            El corte<br />que te<br /><em>define.</em>
+          </h1>
+          <p className="sitio-hero-desc">
+            Expertos en fade, diseno de barba y cortes modernos.
+            Reserva tu turno online y llega listo para lucir diferente.
+          </p>
+          <div className="sitio-hero-actions">
+            <Link href="#reserva" className="btn-primary">Reservar turno →</Link>
+            <Link href="#servicios" className="btn-secondary">Ver servicios</Link>
           </div>
+          <div className="sitio-hero-stats">
+            <div className="sitio-stat"><div className="sitio-stat-val">8+</div><div className="sitio-stat-label">Anos de experiencia</div></div>
+            <div className="sitio-stat"><div className="sitio-stat-val">4.9</div><div className="sitio-stat-label">Calificacion Google</div></div>
+            <div className="sitio-stat"><div className="sitio-stat-val">+2k</div><div className="sitio-stat-label">Clientes satisfechos</div></div>
+          </div>
+        </div>
+      </section>
 
-          <div style={{
-            background: "rgba(46,204,113,0.08)",
-            border: "1px solid rgba(46,204,113,0.2)",
-            borderRadius: 8, padding: "0.9rem 1rem",
-            display: "flex", alignItems: "center", gap: "0.8rem",
-            marginBottom: "1.2rem"
-          }}>
-            <div style={{ fontSize: "1.2rem" }}>✅</div>
-            <div>
-              <div style={{ fontWeight: 600, fontSize: "0.9rem" }}>Tu sitio esta online</div>
-              <div style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.4)", fontFamily: "monospace" }}>
-                {barberia?.subdominio}.retcontrol.app
+      {/* SERVICIOS */}
+      <section id="servicios" className="sitio-section">
+        <div className="sitio-container">
+          <div className="sitio-section-header">
+            <span className="section-label">Lo que hacemos</span>
+            <h2 className="sitio-section-title">Nuestros <em>servicios</em></h2>
+          </div>
+          <div className="sitio-servicios-grid">
+            {servicios.map((s) => (
+              <div key={s.nombre} className="sitio-servicio-card">
+                <div className="sitio-servicio-dot" style={{ background: s.color }} />
+                <div className="sitio-servicio-name">{s.nombre}</div>
+                <div className="sitio-servicio-desc">{s.desc}</div>
+                <div className="sitio-servicio-meta">
+                  <span className="sitio-servicio-precio">{s.precio}</span>
+                  <span className="sitio-servicio-dur">{s.duracion}</span>
+                </div>
+                <Link href="#reserva" className="sitio-servicio-btn">Reservar</Link>
               </div>
-            </div>
-          </div>
-
-          <div className="config-fields">
-            <div className="config-field">
-              <label className="config-label">Nombre del negocio</label>
-              <input
-                className="config-input"
-                value={form.nombre}
-                onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-              />
-            </div>
-            <div className="config-field">
-              <label className="config-label">Slogan</label>
-              <input
-                className="config-input"
-                value={form.slogan}
-                onChange={(e) => setForm({ ...form, slogan: e.target.value })}
-                placeholder="Ej: Tu estilo, nuestra pasion"
-              />
-            </div>
-            <div className="config-field">
-              <label className="config-label">Direccion</label>
-              <input
-                className="config-input"
-                value={form.direccion}
-                onChange={(e) => setForm({ ...form, direccion: e.target.value })}
-                placeholder="Ej: Av. Corrientes 1234, CABA"
-              />
-            </div>
-            <div className="config-field">
-              <label className="config-label">WhatsApp</label>
-              <input
-                className="config-input"
-                value={form.telefono}
-                onChange={(e) => setForm({ ...form, telefono: e.target.value })}
-                placeholder="+54 11 1234-5678"
-              />
-            </div>
-          </div>
-
-          <div className="config-field" style={{ marginTop: "0.5rem" }}>
-            <label className="config-label">Descripcion</label>
-            <textarea
-              className="config-input config-textarea"
-              value={form.descripcion}
-              onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
-              placeholder="Contales a tus clientes quienes son..."
-            />
+            ))}
           </div>
         </div>
+      </section>
 
-        {/* Notificaciones */}
-        <div className="dash-panel">
-          <div className="config-section-title">
-            <Bell size={16} color="var(--gold)" />
-            Notificaciones
+      {/* EQUIPO */}
+      <section id="equipo" className="sitio-section sitio-section-dark">
+        <div className="sitio-container">
+          <div className="sitio-section-header">
+            <span className="section-label">Nuestro equipo</span>
+            <h2 className="sitio-section-title">Conoce a los <em>maestros</em></h2>
           </div>
-          <div className="config-toggle-item">
-            <div>
-              <div className="config-toggle-label">Recordatorios automaticos</div>
-              <div className="config-toggle-desc">Email al cliente 24hs antes del turno</div>
-            </div>
-            <div
-              className={`config-toggle ${recordatorios ? "toggle-on" : "toggle-off"}`}
-              onClick={() => setRecordatorios(!recordatorios)}
-            >
-              <div className="config-toggle-knob" />
-            </div>
-          </div>
-          <div className="config-toggle-item">
-            <div>
-              <div className="config-toggle-label">Confirmacion manual</div>
-              <div className="config-toggle-desc">Debas aprobar cada reserva antes de confirmarla</div>
-            </div>
-            <div
-              className={`config-toggle ${confirmManual ? "toggle-on" : "toggle-off"}`}
-              onClick={() => setConfirmManual(!confirmManual)}
-            >
-              <div className="config-toggle-knob" />
-            </div>
-          </div>
-          <div className="config-toggle-item">
-            <div>
-              <div className="config-toggle-label">Turnos online activos</div>
-              <div className="config-toggle-desc">Tus clientes pueden reservar desde tu sitio</div>
-            </div>
-            <div
-              className={`config-toggle ${turnosOnline ? "toggle-on" : "toggle-off"}`}
-              onClick={() => setTurnosOnline(!turnosOnline)}
-            >
-              <div className="config-toggle-knob" />
-            </div>
+          <div className="sitio-barberos-grid">
+            {barberos.map((b) => (
+              <div key={b.initials} className="sitio-barbero-card">
+                <div className="sitio-barbero-avatar" style={{ background: `${b.color}22`, color: b.color }}>
+                  {b.initials}
+                </div>
+                <div className="sitio-barbero-name">{b.name}</div>
+                <div className="sitio-barbero-spec">{b.spec}</div>
+                <div className="sitio-barbero-rating">
+                  <Star size={13} color="var(--gold)" fill="var(--gold)" />
+                  <span>{b.rating}</span>
+                  <span style={{ color: "rgba(255,255,255,0.3)" }}>({b.reviews} resenas)</span>
+                </div>
+                <Link href="#reserva" className="sitio-barbero-btn">
+                  Reservar con {b.name.split(" ")[0]} →
+                </Link>
+              </div>
+            ))}
           </div>
         </div>
+      </section>
 
-        {/* Horarios */}
-        <div className="dash-panel">
-          <div className="config-section-title">
-            <Calendar size={16} color="var(--gold)" />
-            Horarios de atencion
-          </div>
-          <div className="config-horarios">
-            {[
-              { dia: "Lunes",     desde: "09:00", hasta: "20:00", activo: true  },
-              { dia: "Martes",    desde: "09:00", hasta: "20:00", activo: true  },
-              { dia: "Miercoles", desde: "09:00", hasta: "20:00", activo: true  },
-              { dia: "Jueves",    desde: "09:00", hasta: "20:00", activo: true  },
-              { dia: "Viernes",   desde: "09:00", hasta: "20:00", activo: true  },
-              { dia: "Sabado",    desde: "09:00", hasta: "17:00", activo: true  },
-              { dia: "Domingo",   desde: "",       hasta: "",      activo: false },
-            ].map((h) => (
-              <div key={h.dia} className="config-horario-row">
-                <span className="config-horario-dia">{h.dia}</span>
-                {h.activo ? (
-                  <div className="config-horario-inputs">
-                    <input className="config-input config-time-input" defaultValue={h.desde} type="time" />
-                    <span style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.8rem" }}>a</span>
-                    <input className="config-input config-time-input" defaultValue={h.hasta} type="time" />
+      {/* RESERVA */}
+      <section id="reserva" className="sitio-section">
+        <div className="sitio-container">
+          <div className="sitio-reserva-grid">
+            <div className="sitio-reserva-info">
+              <span className="section-label">Turno online</span>
+              <h2 className="sitio-section-title">
+                Reserva en<br /><em>menos de 2 minutos.</em>
+              </h2>
+              <p className="sitio-reserva-desc">
+                Sin llamar, sin esperar. Elegis el servicio, el barbero,
+                el dia y el horario — y listo.
+              </p>
+              <div className="sitio-reserva-features">
+                {[
+                  "Confirmacion inmediata por email",
+                  "Cancelacion sin costo hasta 2 horas antes",
+                  "Recordatorio automatico el dia anterior",
+                  "Disponible los 7 dias de la semana",
+                ].map((f) => (
+                  <div key={f} className="sitio-reserva-feat">
+                    <span style={{ color: "var(--gold)", fontWeight: 700 }}>✓</span>
+                    {f}
                   </div>
-                ) : (
-                  <span className="config-horario-cerrado">Cerrado</span>
-                )}
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Suscripcion */}
-        <div className="dash-panel">
-          <div className="config-section-title">
-            <CreditCard size={16} color="var(--gold)" />
-            Suscripcion
-          </div>
-          <div className="config-plan">
-            <div className="config-plan-info">
-              <div className="config-plan-name">Plan {barberia?.plan}</div>
-              <div className="config-plan-price">
-                {barberia?.plan === "STARTER" ? "$15" : barberia?.plan === "PRO" ? "$25" : "$40"} USD / mes
-              </div>
-              <div className="config-plan-next">Administra tu suscripcion desde el panel de pagos</div>
             </div>
-            <button className="barbero-btn-outline">Cambiar plan</button>
-          </div>
-          <div className="config-plan-features">
-            {[
-              barberia?.plan === "STARTER" ? "Hasta 2 barberos" : barberia?.plan === "PRO" ? "Hasta 5 barberos" : "Barberos ilimitados",
-              "Subdominio propio",
-              "Turnos online ilimitados",
-              barberia?.plan !== "STARTER" ? "Notificaciones por email" : null,
-            ].filter(Boolean).map((f) => (
-              <div key={f!} className="config-plan-feat">
-                <Shield size={12} color="var(--gold)" />
-                {f}
-              </div>
-            ))}
+            <div className="sitio-reserva-form">
+              <div className="sitio-form-title">Elegis tu turno</div>
+              <label className="config-label">Servicio</label>
+              <select className="config-input dash-select" style={{ marginBottom: "1rem" }}>
+                <option>— Selecciona un servicio —</option>
+                {servicios.map((s) => (
+                  <option key={s.nombre}>{s.nombre} — {s.precio} · {s.duracion}</option>
+                ))}
+              </select>
+              <label className="config-label">Barbero</label>
+              <select className="config-input dash-select" style={{ marginBottom: "1rem" }}>
+                <option>— Sin preferencia —</option>
+                {barberos.map((b) => (
+                  <option key={b.initials}>{b.name}</option>
+                ))}
+              </select>
+              <label className="config-label">Fecha</label>
+              <select className="config-input dash-select" style={{ marginBottom: "1rem" }}>
+                <option>Hoy, miercoles 9 de julio</option>
+                <option>Manana, jueves 10 de julio</option>
+                <option>Viernes 11 de julio</option>
+                <option>Sabado 12 de julio</option>
+              </select>
+              <label className="config-label">Tu nombre</label>
+              <input className="config-input" placeholder="Ej: Martin Garcia" style={{ marginBottom: "0.8rem" }} />
+              <label className="config-label">Email</label>
+              <input className="config-input" placeholder="Ej: martin@email.com" style={{ marginBottom: "1.2rem" }} />
+              <button className="btn-primary" style={{ width: "100%", border: "none", cursor: "pointer", textAlign: "center" }}>
+                Confirmar turno ✓
+              </button>
+            </div>
           </div>
         </div>
+      </section>
 
-      </div>
+      {/* UBICACION */}
+      <section id="ubicacion" className="sitio-section sitio-section-dark">
+        <div className="sitio-container">
+          <div className="sitio-section-header">
+            <span className="section-label">Donde estamos</span>
+            <h2 className="sitio-section-title">Veni a <em>visitarnos</em></h2>
+          </div>
+          <div className="sitio-ubicacion-grid">
+            <div className="sitio-map-placeholder">
+              <MapPin size={32} color="var(--gold)" />
+              <div style={{ fontWeight: 600 }}>Av. Corrientes 1234, CABA</div>
+              <div style={{ fontSize: "0.85rem", color: "rgba(255,255,255,0.4)" }}>Palermo · Buenos Aires</div>
+            </div>
+            <div className="sitio-info-items">
+              {[
+                { icon: MapPin,  label: "Direccion", val: "Av. Corrientes 1234, Palermo\nCiudad Autonoma de Buenos Aires" },
+                { icon: Clock,   label: "Horarios",  val: horarios.map(h => `${h.dia}: ${h.hours}`).join("\n") },
+                { icon: Phone,   label: "WhatsApp",  val: "+54 11 4567-8900" },
+                { icon: AtSign,  label: "Instagram", val: "@kingscutsba" },
+              ].map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div key={item.label} className="sitio-info-item">
+                    <Icon size={18} color="var(--gold)" style={{ flexShrink: 0, marginTop: 2 }} />
+                    <div>
+                      <div className="sitio-info-label">{item.label}</div>
+                      <div className="sitio-info-val">{item.val}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="sitio-footer">
+        <div className="sitio-footer-inner">
+          <div className="sitio-footer-logo"><em>King's</em> Cuts</div>
+          <div className="sitio-footer-power">
+            Powered by <span style={{ color: "var(--gold)" }}>RETcontrol</span>
+          </div>
+        </div>
+      </footer>
+
     </div>
   );
 }
