@@ -932,13 +932,13 @@ body {
 }
 .config-field { display: flex; flex-direction: column; gap: 0.35rem; }
 .config-label {
-  font-size: 0.75rem; color: var(--dark);
+  font-size: 0.75rem; color: rgba(255,255,255,0.4);
   text-transform: uppercase; letter-spacing: 0.05em;
 }
 .config-input {
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.1);
-  color: var(--white); padding: 0.6rem 0.8rem;
+  color: var(--gold); padding: 0.6rem 0.8rem;
   border-radius: 6px; font-size: 0.875rem;
   font-family: var(--font-dm-sans), sans-serif;
   transition: border-color 0.2s;
