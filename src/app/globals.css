@@ -663,7 +663,7 @@ body {
 .dash-select {
   background: var(--charcoal2);
   border: 1px solid rgba(255,255,255,0.1);
-  color: var(--white);
+  color: var(--dark);
   padding: 0.3rem 0.6rem;
   border-radius: 5px;
   font-size: 0.8rem;
