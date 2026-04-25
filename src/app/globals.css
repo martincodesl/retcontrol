@@ -947,7 +947,7 @@ body {
   box-sizing: border-box;
 }
 .config-input:focus {
-  outline: none; border-color: var(--gold); background: rgba(255,255,255,0.04);;
+  outline: none; border-color: var(--gold); background: rgba(201,168,76,0.03);
 }
 .config-textarea {
   resize: vertical; min-height: 80px;
