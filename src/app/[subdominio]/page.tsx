@@ -123,7 +123,7 @@ export default async function SitioPublicoPage({
                 Reserva en<br /><em>menos de 2 minutos.</em>
               </h2>
               <p className="sitio-reserva-desc">
-                Sin llamar, sin esperar. Elegis el servicio, el barbero,
+                Sin llamarrrrrrrrrr, sin esperar. Elegis el servicio, el barbero,
                 el dia y el horario — y listo.
               </p>
               <div className="sitio-reserva-features">

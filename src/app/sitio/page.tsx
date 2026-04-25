@@ -129,7 +129,7 @@ export default function SitioPage() {
                 Reserva en<br /><em>menos de 2 minutos.</em>
               </h2>
               <p className="sitio-reserva-desc">
-                Sin llamarrrrrrrrrrrrr, sin esperar. Elegis el servicio, el barbero,
+                Sin llamar, sin esperar. Elegis el servicio, el barbero,
                 el dia y el horario — y listo.
               </p>
               <div className="sitio-reserva-features">
