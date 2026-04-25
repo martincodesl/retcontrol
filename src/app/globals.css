@@ -661,7 +661,7 @@ body {
 
 /* SELECT */
 .dash-select {
-  background: var(--gold);
+  background: var(--charcoal2);
   border: 1px solid rgba(255,255,255,0.1);
   color: var(--dark);
   padding: 0.3rem 0.6rem;
@@ -947,7 +947,7 @@ body {
   box-sizing: border-box;
 }
 .config-input:focus {
-  outline: none; border-color: var(--gold);
+  outline: none; border-color: var(--gold); background-color: red;
 }
 .config-textarea {
   resize: vertical; min-height: 80px;
