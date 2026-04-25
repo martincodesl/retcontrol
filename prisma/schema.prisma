@@ -29,27 +29,43 @@ model Barberia {
 
 // ── BARBERO ───────────────────────────────────────────────
 model Barbero {
-  id          String   @id @default(cuid())
-  nombre      String
+  id           String   @id @default(cuid())
+  nombre       String
+  usuario      String   // nombre de usuario para login
+  pin          String   // PIN de 6 digitos hasheado
   especialidad String?
-  foto        String?
-  activo      Boolean  @default(true)
-  creadoEn    DateTime @default(now())
+  foto         String?
+  activo       Boolean  @default(true)
+  creadoEn     DateTime @default(now())
 
-  barberiaId  String
-  barberia    Barberia @relation(fields: [barberiaId], references: [id])
+  barberiaId   String
+  barberia     Barberia @relation(fields: [barberiaId], references: [id])
 
-  horarios    Horario[]
-  turnos      Turno[]
+  horarios          Horario[]
+  horariosBloqueados HorarioBloqueado[]
+  turnos            Turno[]
+  gastos            GastoBarbero[]
+
+  @@unique([usuario, barberiaId])
 }
 
 // ── HORARIO ───────────────────────────────────────────────
 model Horario {
   id        String  @id @default(cuid())
-  diaSemana Int     // 0=Lunes, 6=Domingo
-  desde     String  // "09:00"
-  hasta     String  // "18:00"
+  diaSemana Int
+  desde     String
+  hasta     String
   activo    Boolean @default(true)
+
+  barberoId String
+  barbero   Barbero @relation(fields: [barberoId], references: [id])
+}
+
+// ── HORARIO BLOQUEADO ─────────────────────────────────────
+model HorarioBloqueado {
+  id     String   @id @default(cuid())
+  fecha  DateTime
+  motivo String?
 
   barberoId String
   barbero   Barbero @relation(fields: [barberoId], references: [id])
@@ -60,8 +76,8 @@ model Servicio {
   id          String  @id @default(cuid())
   nombre      String
   descripcion String?
-  precio      Int     // en centavos, ej: 250000 = $2.500
-  duracion    Int     // en minutos
+  precio      Int
+  duracion    Int
   color       String  @default("#C9A84C")
   activo      Boolean @default(true)
 
@@ -73,14 +89,14 @@ model Servicio {
 
 // ── TURNO ─────────────────────────────────────────────────
 model Turno {
-  id             String      @id @default(cuid())
-  fecha          DateTime
-  estado         EstadoTurno @default(PENDIENTE)
-  clienteNombre  String
-  clienteEmail   String
+  id              String      @id @default(cuid())
+  fecha           DateTime
+  estado          EstadoTurno @default(PENDIENTE)
+  clienteNombre   String
+  clienteEmail    String
   clienteTelefono String?
-  notas          String?
-  creadoEn       DateTime    @default(now())
+  notas           String?
+  creadoEn        DateTime    @default(now())
 
   barberiaId  String
   barberia    Barberia @relation(fields: [barberiaId], references: [id])
@@ -90,6 +106,18 @@ model Turno {
 
   servicioId  String
   servicio    Servicio @relation(fields: [servicioId], references: [id])
+}
+
+// ── GASTO BARBERO ─────────────────────────────────────────
+model GastoBarbero {
+  id        String            @id @default(cuid())
+  nombre    String
+  monto     Int
+  categoria CategoriaGasto
+  fecha     DateTime          @default(now())
+
+  barberoId String
+  barbero   Barbero @relation(fields: [barberoId], references: [id])
 }
 
 // ── ENUMS ─────────────────────────────────────────────────
@@ -105,4 +133,13 @@ enum EstadoTurno {
   EN_CURSO
   COMPLETADO
   CANCELADO
+}
+
+enum CategoriaGasto {
+  HERRAMIENTAS
+  PRODUCTOS
+  TRANSPORTE
+  COMIDA
+  ROPA
+  OTROS
 }
