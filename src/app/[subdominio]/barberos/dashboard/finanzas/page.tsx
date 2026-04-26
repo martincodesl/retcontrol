@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Plus, Trash2, DollarSign, TrendingDown, TrendingUp } from "lucide-react";
+import { Plus, Trash2, DollarSign, TrendingDown, TrendingUp, Filter } from "lucide-react";
 
 interface BarberoSession {
   id: string;
@@ -12,7 +12,8 @@ interface BarberoSession {
 
 interface Turno {
   id: string;
-  servicio: { precio: number };
+  fecha: string;
+  servicio: { precio: number; nombre: string };
   estado: string;
 }
 
@@ -33,7 +34,8 @@ const CATEGORIAS = [
   { value: "OTROS",        label: "Otros",         color: "#95A5A6" },
 ];
 
-// Grafico de torta SVG
+type PeriodoTipo = "mes_actual" | "mes_anterior" | "personalizado";
+
 function GraficoTorta({ datos }: { datos: { label: string; valor: number; color: string }[] }) {
   const total = datos.reduce((acc, d) => acc + d.valor, 0);
   if (total === 0) return (
@@ -105,6 +107,42 @@ export default function FinanzasBarberoPage() {
   const [guardando, setGuardando] = useState(false);
   const [form, setForm] = useState({ nombre: "", monto: "", categoria: "HERRAMIENTAS" });
 
+  // Filtro de período
+  const [periodo, setPeriodo] = useState<PeriodoTipo>("mes_actual");
+  const [desde, setDesde] = useState("");
+  const [hasta, setHasta] = useState("");
+
+  const getPeriodoParams = () => {
+    const ahora = new Date();
+    if (periodo === "mes_actual") {
+      const d = new Date(ahora.getFullYear(), ahora.getMonth(), 1).toISOString().split("T")[0];
+      const h = new Date(ahora.getFullYear(), ahora.getMonth() + 1, 0).toISOString().split("T")[0];
+      return `desde=${d}&hasta=${h}`;
+    }
+    if (periodo === "mes_anterior") {
+      const d = new Date(ahora.getFullYear(), ahora.getMonth() - 1, 1).toISOString().split("T")[0];
+      const h = new Date(ahora.getFullYear(), ahora.getMonth(), 0).toISOString().split("T")[0];
+      return `desde=${d}&hasta=${h}`;
+    }
+    if (periodo === "personalizado" && desde && hasta) {
+      return `desde=${desde}&hasta=${hasta}`;
+    }
+    return "";
+  };
+
+  const getPeriodoLabel = () => {
+    const ahora = new Date();
+    const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+    if (periodo === "mes_actual") return `${meses[ahora.getMonth()]} ${ahora.getFullYear()}`;
+    if (periodo === "mes_anterior") {
+      const mesAnt = ahora.getMonth() === 0 ? 11 : ahora.getMonth() - 1;
+      const anioAnt = ahora.getMonth() === 0 ? ahora.getFullYear() - 1 : ahora.getFullYear();
+      return `${meses[mesAnt]} ${anioAnt}`;
+    }
+    if (periodo === "personalizado" && desde && hasta) return `${desde} al ${hasta}`;
+    return "Selecciona un periodo";
+  };
+
   useEffect(() => {
     const session = localStorage.getItem("barbero_session");
     if (!session) {
@@ -116,10 +154,16 @@ export default function FinanzasBarberoPage() {
     cargarDatos(barberoData.id);
   }, []);
 
+  useEffect(() => {
+    if (barbero) cargarDatos(barbero.id);
+  }, [periodo, desde, hasta]);
+
   const cargarDatos = async (barberoId: string) => {
+    setLoading(true);
     try {
+      const periodoParams = getPeriodoParams();
       const [resTurnos, resGastos] = await Promise.all([
-        fetch(`/api/barberos/${barberoId}/mis-turnos`),
+        fetch(`/api/barberos/${barberoId}/mis-turnos${periodoParams ? "?" + periodoParams : ""}`),
         fetch(`/api/barberos/${barberoId}/mis-gastos`),
       ]);
       const dataTurnos = await resTurnos.json();
@@ -176,9 +220,7 @@ export default function FinanzasBarberoPage() {
   const gastosPorCategoria = CATEGORIAS.map((cat) => ({
     label: cat.label,
     color: cat.color,
-    valor: gastos
-      .filter((g) => g.categoria === cat.value)
-      .reduce((acc, g) => acc + g.monto, 0),
+    valor: gastos.filter((g) => g.categoria === cat.value).reduce((acc, g) => acc + g.monto, 0),
   })).filter((d) => d.valor > 0);
 
   if (!barbero) return null;
@@ -206,6 +248,75 @@ export default function FinanzasBarberoPage() {
 
       <div style={{ padding: "2rem", maxWidth: 900, margin: "0 auto" }}>
 
+        {/* Selector de período */}
+        <div className="dash-panel" style={{ marginBottom: "1.5rem" }}>
+          <div className="dash-panel-header">
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <Filter size={14} color="var(--gold)" />
+              <div className="dash-panel-title">Periodo</div>
+            </div>
+            <span style={{ fontSize: "0.8rem", color: "var(--gold)", fontWeight: 600 }}>
+              {getPeriodoLabel()}
+            </span>
+          </div>
+
+          {/* Botones de período */}
+          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: periodo === "personalizado" ? "1rem" : 0 }}>
+            {[
+              { value: "mes_actual",   label: "Este mes" },
+              { value: "mes_anterior", label: "Mes anterior" },
+              { value: "personalizado", label: "Personalizado" },
+            ].map((p) => (
+              <button
+                key={p.value}
+                onClick={() => setPeriodo(p.value as PeriodoTipo)}
+                style={{
+                  background: periodo === p.value ? "var(--gold)" : "rgba(255,255,255,0.05)",
+                  color: periodo === p.value ? "var(--dark)" : "rgba(255,255,255,0.6)",
+                  border: periodo === p.value ? "none" : "1px solid rgba(255,255,255,0.1)",
+                  padding: "0.45rem 1rem", borderRadius: 6,
+                  cursor: "pointer", fontSize: "0.82rem", fontWeight: 600,
+                  fontFamily: "var(--font-dm-sans)",
+                  transition: "all 0.15s",
+                }}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Fechas personalizadas */}
+          {periodo === "personalizado" && (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: "0.8rem", alignItems: "flex-end" }}>
+              <div className="auth-field">
+                <label className="config-label">Desde</label>
+                <input
+                  className="config-input"
+                  type="date"
+                  value={desde}
+                  onChange={(e) => setDesde(e.target.value)}
+                />
+              </div>
+              <div className="auth-field">
+                <label className="config-label">Hasta</label>
+                <input
+                  className="config-input"
+                  type="date"
+                  value={hasta}
+                  onChange={(e) => setHasta(e.target.value)}
+                />
+              </div>
+              <button
+                className="dash-topbar-btn"
+                onClick={() => barbero && cargarDatos(barbero.id)}
+                style={{ height: 38 }}
+              >
+                Aplicar
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* KPIs */}
         <div className="dash-cards" style={{ marginBottom: "1.5rem" }}>
           <div className="dash-card">
@@ -216,7 +327,7 @@ export default function FinanzasBarberoPage() {
             <div className="dash-card-val" style={{ color: "#2ECC71", fontSize: "1.5rem" }}>
               ${ingresoTotal.toLocaleString("es-AR")}
             </div>
-            <div className="dash-card-sub dash-up">turnos completados</div>
+            <div className="dash-card-sub dash-up">{turnos.filter(t => t.estado === "COMPLETADO").length} turnos completados</div>
           </div>
           <div className="dash-card">
             <div className="dash-card-top">
@@ -226,7 +337,7 @@ export default function FinanzasBarberoPage() {
             <div className="dash-card-val" style={{ color: "#E74C3C", fontSize: "1.5rem" }}>
               ${gastoTotal.toLocaleString("es-AR")}
             </div>
-            <div className="dash-card-sub dash-down">registrados</div>
+            <div className="dash-card-sub dash-down">{gastos.length} gastos registrados</div>
           </div>
           <div className="dash-card">
             <div className="dash-card-top">
@@ -245,12 +356,40 @@ export default function FinanzasBarberoPage() {
         {/* Grafico */}
         {gastosPorCategoria.length > 0 && (
           <div className="dash-panel" style={{ marginBottom: "1.5rem" }}>
-            <div className="dash-panel-title" style={{ marginBottom: "1rem" }}>
-              Gastos por categoria
-            </div>
+            <div className="dash-panel-title" style={{ marginBottom: "1rem" }}>Gastos por categoria</div>
             <GraficoTorta datos={gastosPorCategoria} />
           </div>
         )}
+
+        {/* Ingresos por turno */}
+        <div className="dash-panel" style={{ marginBottom: "1.5rem" }}>
+          <div className="dash-panel-header">
+            <div className="dash-panel-title">Ingresos del periodo</div>
+            <span className="dash-panel-action">{turnos.filter(t => t.estado === "COMPLETADO").length} turnos</span>
+          </div>
+          {loading ? (
+            <div style={{ padding: "2rem", textAlign: "center", color: "rgba(255,255,255,0.3)" }}>Cargando...</div>
+          ) : turnos.filter(t => t.estado === "COMPLETADO").length === 0 ? (
+            <div style={{ padding: "1.5rem", textAlign: "center", color: "rgba(255,255,255,0.3)", fontSize: "0.875rem" }}>
+              No hay ingresos en este periodo
+            </div>
+          ) : (
+            turnos.filter(t => t.estado === "COMPLETADO").map((t) => (
+              <div key={t.id} className="fin-mov-item">
+                <div className="fin-mov-icon fin-mov-in">↑</div>
+                <div className="fin-mov-info">
+                  <div className="fin-mov-desc">{t.servicio.nombre}</div>
+                  <div className="fin-mov-sub">
+                    {new Date(t.fecha).toLocaleDateString("es-AR", { weekday: "short", day: "numeric", month: "short" })}
+                  </div>
+                </div>
+                <div className="fin-mov-monto" style={{ color: "#2ECC71" }}>
+                  +${t.servicio.precio.toLocaleString("es-AR")}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
 
         {/* Gastos */}
         <div className="dash-panel">
@@ -266,7 +405,6 @@ export default function FinanzasBarberoPage() {
             </button>
           </div>
 
-          {/* Form */}
           {mostrarForm && (
             <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 8, padding: "1rem", marginBottom: "1rem" }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.8rem", marginBottom: "0.8rem" }}>
@@ -313,12 +451,7 @@ export default function FinanzasBarberoPage() {
             </div>
           )}
 
-          {/* Lista */}
-          {loading ? (
-            <div style={{ padding: "2rem", textAlign: "center", color: "rgba(255,255,255,0.3)" }}>
-              Cargando...
-            </div>
-          ) : gastos.length === 0 ? (
+          {gastos.length === 0 ? (
             <div style={{ padding: "2rem", textAlign: "center", color: "rgba(255,255,255,0.3)", fontSize: "0.875rem" }}>
               No hay gastos registrados
             </div>
