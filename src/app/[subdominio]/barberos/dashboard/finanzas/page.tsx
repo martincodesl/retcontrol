@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Plus, Trash2, DollarSign, TrendingDown, TrendingUp, Filter } from "lucide-react";
 
@@ -35,6 +35,38 @@ const CATEGORIAS = [
 ];
 
 type PeriodoTipo = "mes_actual" | "mes_anterior" | "personalizado";
+
+// Calcula desde/hasta según el período — fuera del componente para evitar closures
+function calcularFechas(p: PeriodoTipo, d: string, h: string): string {
+  const ahora = new Date();
+  if (p === "mes_actual") {
+    const desde = new Date(ahora.getFullYear(), ahora.getMonth(), 1).toISOString().split("T")[0];
+    const hasta  = new Date(ahora.getFullYear(), ahora.getMonth() + 1, 0).toISOString().split("T")[0];
+    return `desde=${desde}&hasta=${hasta}`;
+  }
+  if (p === "mes_anterior") {
+    const desde = new Date(ahora.getFullYear(), ahora.getMonth() - 1, 1).toISOString().split("T")[0];
+    const hasta  = new Date(ahora.getFullYear(), ahora.getMonth(), 0).toISOString().split("T")[0];
+    return `desde=${desde}&hasta=${hasta}`;
+  }
+  if (p === "personalizado" && d && h) {
+    return `desde=${d}&hasta=${h}`;
+  }
+  return "";
+}
+
+function getPeriodoLabel(p: PeriodoTipo, d: string, h: string): string {
+  const ahora = new Date();
+  const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+  if (p === "mes_actual") return `${meses[ahora.getMonth()]} ${ahora.getFullYear()}`;
+  if (p === "mes_anterior") {
+    const mesAnt  = ahora.getMonth() === 0 ? 11 : ahora.getMonth() - 1;
+    const anioAnt = ahora.getMonth() === 0 ? ahora.getFullYear() - 1 : ahora.getFullYear();
+    return `${meses[mesAnt]} ${anioAnt}`;
+  }
+  if (p === "personalizado" && d && h) return `${d} al ${h}`;
+  return "Selecciona un periodo";
+}
 
 function GraficoTorta({ datos }: { datos: { label: string; valor: number; color: string }[] }) {
   const total = datos.reduce((acc, d) => acc + d.valor, 0);
@@ -95,104 +127,70 @@ function GraficoTorta({ datos }: { datos: { label: string; valor: number; color:
 }
 
 export default function FinanzasBarberoPage() {
-  const params = useParams();
-  const router = useRouter();
+  const params   = useParams();
+  const router   = useRouter();
   const subdominio = params.subdominio as string;
 
-  const [barbero, setBarbero] = useState<BarberoSession | null>(null);
-  const [turnos, setTurnos] = useState<Turno[]>([]);
-  const [gastos, setGastos] = useState<Gasto[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [mostrarForm, setMostrarForm] = useState(false);
-  const [guardando, setGuardando] = useState(false);
-  const [form, setForm] = useState({ nombre: "", monto: "", categoria: "HERRAMIENTAS" });
+  const [barbero,      setBarbero]      = useState<BarberoSession | null>(null);
+  const [turnos,       setTurnos]       = useState<Turno[]>([]);
+  const [gastos,       setGastos]       = useState<Gasto[]>([]);
+  const [loading,      setLoading]      = useState(true);
+  const [mostrarForm,  setMostrarForm]  = useState(false);
+  const [guardando,    setGuardando]    = useState(false);
+  const [form,         setForm]         = useState({ nombre: "", monto: "", categoria: "HERRAMIENTAS" });
+  const [periodo,      setPeriodo]      = useState<PeriodoTipo>("mes_actual");
+  const [desde,        setDesde]        = useState("");
+  const [hasta,        setHasta]        = useState("");
 
-  // Filtro de período
-  const [periodo, setPeriodo] = useState<PeriodoTipo>("mes_actual");
-  const [desde, setDesde] = useState("");
-  const [hasta, setHasta] = useState("");
+  // cargarDatos recibe todos los parámetros — no depende del estado
+  const cargarDatos = useCallback(async (
+    barberoId: string,
+    p: PeriodoTipo,
+    d: string,
+    h: string
+  ) => {
+    setLoading(true);
+    try {
+      const paramStr = calcularFechas(p, d, h);
+      const url = `/api/barberos/${barberoId}/mis-turnos${paramStr ? "?" + paramStr : ""}`;
+      const [resTurnos, resGastos] = await Promise.all([
+        fetch(url),
+        fetch(`/api/barberos/${barberoId}/mis-gastos`),
+      ]);
+      const dataTurnos = await resTurnos.json();
+      const dataGastos = await resGastos.json();
+      setTurnos(dataTurnos.turnos || []);
+      setGastos(dataGastos.gastos || []);
+    } catch {
+      console.error("Error al cargar datos");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const getPeriodoParams = () => {
-    const ahora = new Date();
-    if (periodo === "mes_actual") {
-      const d = new Date(ahora.getFullYear(), ahora.getMonth(), 1).toISOString().split("T")[0];
-      const h = new Date(ahora.getFullYear(), ahora.getMonth() + 1, 0).toISOString().split("T")[0];
-      return `desde=${d}&hasta=${h}`;
-    }
-    if (periodo === "mes_anterior") {
-      const d = new Date(ahora.getFullYear(), ahora.getMonth() - 1, 1).toISOString().split("T")[0];
-      const h = new Date(ahora.getFullYear(), ahora.getMonth(), 0).toISOString().split("T")[0];
-      return `desde=${d}&hasta=${h}`;
-    }
-    if (periodo === "personalizado" && desde && hasta) {
-      return `desde=${desde}&hasta=${hasta}`;
-    }
-    return "";
-  };
-
-  const getPeriodoLabel = () => {
-    const ahora = new Date();
-    const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-    if (periodo === "mes_actual") return `${meses[ahora.getMonth()]} ${ahora.getFullYear()}`;
-    if (periodo === "mes_anterior") {
-      const mesAnt = ahora.getMonth() === 0 ? 11 : ahora.getMonth() - 1;
-      const anioAnt = ahora.getMonth() === 0 ? ahora.getFullYear() - 1 : ahora.getFullYear();
-      return `${meses[mesAnt]} ${anioAnt}`;
-    }
-    if (periodo === "personalizado" && desde && hasta) return `${desde} al ${hasta}`;
-    return "Selecciona un periodo";
-  };
-
+  // Carga inicial
   useEffect(() => {
-  const session = localStorage.getItem("barbero_session");
-  if (!session) {
-    router.push(`/${subdominio}/barberos`);
-    return;
-  }
-  const barberoData = JSON.parse(session);
-  setBarbero(barberoData);
-}, []);
-
-useEffect(() => {
-  if (!barbero) return;
-  if (periodo === "personalizado" && (!desde || !hasta)) return;
-  cargarDatos(barbero.id);
-}, [barbero, periodo, desde, hasta]);
-
-  const cargarDatos = async (barberoId: string) => {
-  console.log("Cargando datos con periodo:", periodo);
-  console.log("Desde:", desde, "Hasta:", hasta);
-  setLoading(true);
-  try {
-    const ahora = new Date();
-    let paramStr = "";
-
-    if (periodo === "mes_actual") {
-      const d = new Date(ahora.getFullYear(), ahora.getMonth(), 1).toISOString().split("T")[0];
-      const h = new Date(ahora.getFullYear(), ahora.getMonth() + 1, 0).toISOString().split("T")[0];
-      paramStr = `desde=${d}&hasta=${h}`;
-    } else if (periodo === "mes_anterior") {
-      const d = new Date(ahora.getFullYear(), ahora.getMonth() - 1, 1).toISOString().split("T")[0];
-      const h = new Date(ahora.getFullYear(), ahora.getMonth(), 0).toISOString().split("T")[0];
-      paramStr = `desde=${d}&hasta=${h}`;
-    } else if (periodo === "personalizado" && desde && hasta) {
-      paramStr = `desde=${desde}&hasta=${hasta}`;
+    const session = localStorage.getItem("barbero_session");
+    if (!session) {
+      router.push(`/${subdominio}/barberos`);
+      return;
     }
+    const barberoData = JSON.parse(session);
+    setBarbero(barberoData);
+    cargarDatos(barberoData.id, "mes_actual", "", "");
+  }, []);
 
-    const [resTurnos, resGastos] = await Promise.all([
-      fetch(`/api/barberos/${barberoId}/mis-turnos${paramStr ? "?" + paramStr : ""}`),
-      fetch(`/api/barberos/${barberoId}/mis-gastos`),
-    ]);
-    const dataTurnos = await resTurnos.json();
-    const dataGastos = await resGastos.json();
-    setTurnos(dataTurnos.turnos || []);
-    setGastos(dataGastos.gastos || []);
-  } catch {
-    console.error("Error al cargar datos");
-  } finally {
-    setLoading(false);
-  }
-};
+  // Recarga cuando cambia el período (excepto personalizado sin fechas)
+  useEffect(() => {
+    if (!barbero) return;
+    if (periodo === "personalizado") return; // espera que el usuario presione Aplicar
+    cargarDatos(barbero.id, periodo, "", "");
+  }, [periodo]);
+
+  const aplicarPersonalizado = () => {
+    if (!barbero || !desde || !hasta) return;
+    cargarDatos(barbero.id, "personalizado", desde, hasta);
+  };
 
   const agregarGasto = async () => {
     if (!form.nombre || !form.monto) return;
@@ -202,14 +200,14 @@ useEffect(() => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          nombre: form.nombre,
-          monto: Number(form.monto),
+          nombre:    form.nombre,
+          monto:     Number(form.monto),
           categoria: form.categoria,
         }),
       });
       setForm({ nombre: "", monto: "", categoria: "HERRAMIENTAS" });
       setMostrarForm(false);
-      cargarDatos(barbero!.id);
+      cargarDatos(barbero!.id, periodo, desde, hasta);
     } catch {
       console.error("Error al agregar gasto");
     } finally {
@@ -224,15 +222,13 @@ useEffect(() => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ gastoId: id }),
     });
-    cargarDatos(barbero!.id);
+    cargarDatos(barbero!.id, periodo, desde, hasta);
   };
 
-  const ingresoTotal = turnos
-    .filter((t) => t.estado === "COMPLETADO")
-    .reduce((acc, t) => acc + t.servicio.precio, 0);
-
-  const gastoTotal = gastos.reduce((acc, g) => acc + g.monto, 0);
-  const balance = ingresoTotal - gastoTotal;
+  const ingresoTotal  = turnos.filter(t => t.estado === "COMPLETADO").reduce((acc, t) => acc + t.servicio.precio, 0);
+  const gastoTotal    = gastos.reduce((acc, g) => acc + g.monto, 0);
+  const balance       = ingresoTotal - gastoTotal;
+  const turnosCompletados = turnos.filter(t => t.estado === "COMPLETADO");
 
   const gastosPorCategoria = CATEGORIAS.map((cat) => ({
     label: cat.label,
@@ -273,28 +269,26 @@ useEffect(() => {
               <div className="dash-panel-title">Periodo</div>
             </div>
             <span style={{ fontSize: "0.8rem", color: "var(--gold)", fontWeight: 600 }}>
-              {getPeriodoLabel()}
+              {getPeriodoLabel(periodo, desde, hasta)}
             </span>
           </div>
 
-          {/* Botones de período */}
           <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: periodo === "personalizado" ? "1rem" : 0 }}>
             {[
-              { value: "mes_actual",   label: "Este mes" },
-              { value: "mes_anterior", label: "Mes anterior" },
+              { value: "mes_actual",    label: "Este mes"      },
+              { value: "mes_anterior",  label: "Mes anterior"  },
               { value: "personalizado", label: "Personalizado" },
             ].map((p) => (
               <button
                 key={p.value}
                 onClick={() => setPeriodo(p.value as PeriodoTipo)}
                 style={{
-                  background: periodo === p.value ? "var(--gold)" : "rgba(255,255,255,0.05)",
-                  color: periodo === p.value ? "var(--dark)" : "rgba(255,255,255,0.6)",
-                  border: periodo === p.value ? "none" : "1px solid rgba(255,255,255,0.1)",
+                  background:  periodo === p.value ? "var(--gold)" : "rgba(255,255,255,0.05)",
+                  color:       periodo === p.value ? "var(--dark)" : "rgba(255,255,255,0.6)",
+                  border:      periodo === p.value ? "none" : "1px solid rgba(255,255,255,0.1)",
                   padding: "0.45rem 1rem", borderRadius: 6,
                   cursor: "pointer", fontSize: "0.82rem", fontWeight: 600,
-                  fontFamily: "var(--font-dm-sans)",
-                  transition: "all 0.15s",
+                  fontFamily: "var(--font-dm-sans)", transition: "all 0.15s",
                 }}
               >
                 {p.label}
@@ -302,32 +296,17 @@ useEffect(() => {
             ))}
           </div>
 
-          {/* Fechas personalizadas */}
           {periodo === "personalizado" && (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: "0.8rem", alignItems: "flex-end" }}>
               <div className="auth-field">
                 <label className="config-label">Desde</label>
-                <input
-                  className="config-input"
-                  type="date"
-                  value={desde}
-                  onChange={(e) => setDesde(e.target.value)}
-                />
+                <input className="config-input" type="date" value={desde} onChange={(e) => setDesde(e.target.value)} />
               </div>
               <div className="auth-field">
                 <label className="config-label">Hasta</label>
-                <input
-                  className="config-input"
-                  type="date"
-                  value={hasta}
-                  onChange={(e) => setHasta(e.target.value)}
-                />
+                <input className="config-input" type="date" value={hasta} onChange={(e) => setHasta(e.target.value)} />
               </div>
-              <button
-                className="dash-topbar-btn"
-                onClick={() => barbero && cargarDatos(barbero.id)}
-                style={{ height: 38 }}
-              >
+              <button className="dash-topbar-btn" onClick={aplicarPersonalizado} style={{ height: 38 }}>
                 Aplicar
               </button>
             </div>
@@ -344,7 +323,7 @@ useEffect(() => {
             <div className="dash-card-val" style={{ color: "#2ECC71", fontSize: "1.5rem" }}>
               ${ingresoTotal.toLocaleString("es-AR")}
             </div>
-            <div className="dash-card-sub dash-up">{turnos.filter(t => t.estado === "COMPLETADO").length} turnos completados</div>
+            <div className="dash-card-sub dash-up">{turnosCompletados.length} turnos completados</div>
           </div>
           <div className="dash-card">
             <div className="dash-card-top">
@@ -382,16 +361,16 @@ useEffect(() => {
         <div className="dash-panel" style={{ marginBottom: "1.5rem" }}>
           <div className="dash-panel-header">
             <div className="dash-panel-title">Ingresos del periodo</div>
-            <span className="dash-panel-action">{turnos.filter(t => t.estado === "COMPLETADO").length} turnos</span>
+            <span className="dash-panel-action">{turnosCompletados.length} turnos</span>
           </div>
           {loading ? (
             <div style={{ padding: "2rem", textAlign: "center", color: "rgba(255,255,255,0.3)" }}>Cargando...</div>
-          ) : turnos.filter(t => t.estado === "COMPLETADO").length === 0 ? (
+          ) : turnosCompletados.length === 0 ? (
             <div style={{ padding: "1.5rem", textAlign: "center", color: "rgba(255,255,255,0.3)", fontSize: "0.875rem" }}>
               No hay ingresos en este periodo
             </div>
           ) : (
-            turnos.filter(t => t.estado === "COMPLETADO").map((t) => (
+            turnosCompletados.map((t) => (
               <div key={t.id} className="fin-mov-item">
                 <div className="fin-mov-icon fin-mov-in">↑</div>
                 <div className="fin-mov-info">
