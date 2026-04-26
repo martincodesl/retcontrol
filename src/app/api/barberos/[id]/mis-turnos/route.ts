@@ -11,6 +11,8 @@ export async function GET(
     const desde     = searchParams.get("desde");
     const hasta     = searchParams.get("hasta");
 
+    console.log("mis-turnos params:", { fecha, desde, hasta });
+
     const where: any = { barberoId: params.id };
 
     if (fecha) {
