@@ -160,6 +160,8 @@ useEffect(() => {
 }, [barbero, periodo, desde, hasta]);
 
   const cargarDatos = async (barberoId: string) => {
+  console.log("Cargando datos con periodo:", periodo);
+  console.log("Desde:", desde, "Hasta:", hasta);
   setLoading(true);
   try {
     const ahora = new Date();
