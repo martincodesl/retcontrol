@@ -154,8 +154,8 @@ export default function FinanzasBarberoPage() {
       const paramStr = calcularFechas(p, d, h);
       const url = `/api/barberos/${barberoId}/mis-turnos${paramStr ? "?" + paramStr : ""}`;
       const [resTurnos, resGastos] = await Promise.all([
-        fetch(url),
-        fetch(`/api/barberos/${barberoId}/mis-gastos`),
+      fetch(`/api/barberos/${barberoId}/mis-turnos${paramStr ? "?" + paramStr : ""}`),
+      fetch(`/api/barberos/${barberoId}/mis-gastos${paramStr ? "?" + paramStr : ""}`),
       ]);
       const dataTurnos = await resTurnos.json();
       const dataGastos = await resGastos.json();

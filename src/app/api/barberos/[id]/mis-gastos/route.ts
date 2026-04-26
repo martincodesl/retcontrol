@@ -6,10 +6,24 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    const { searchParams } = new URL(req.url);
+    const desde = searchParams.get("desde");
+    const hasta  = searchParams.get("hasta");
+
+    const where: any = { barberoId: params.id };
+
+    if (desde && hasta) {
+      where.fecha = {
+        gte: new Date(desde + "T00:00:00.000Z"),
+        lte: new Date(hasta  + "T23:59:59.999Z"),
+      };
+    }
+
     const gastos = await prisma.gastoBarbero.findMany({
-      where: { barberoId: params.id },
+      where,
       orderBy: { fecha: "desc" },
     });
+
     return NextResponse.json({ gastos });
   } catch (error) {
     console.error("Error:", error);
