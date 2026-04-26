@@ -144,38 +144,53 @@ export default function FinanzasBarberoPage() {
   };
 
   useEffect(() => {
-    const session = localStorage.getItem("barbero_session");
-    if (!session) {
-      router.push(`/${subdominio}/barberos`);
-      return;
-    }
-    const barberoData = JSON.parse(session);
-    setBarbero(barberoData);
-    cargarDatos(barberoData.id);
-  }, []);
+  const session = localStorage.getItem("barbero_session");
+  if (!session) {
+    router.push(`/${subdominio}/barberos`);
+    return;
+  }
+  const barberoData = JSON.parse(session);
+  setBarbero(barberoData);
+}, []);
 
-  useEffect(() => {
-    if (barbero) cargarDatos(barbero.id);
-  }, [periodo, desde, hasta]);
+useEffect(() => {
+  if (!barbero) return;
+  if (periodo === "personalizado" && (!desde || !hasta)) return;
+  cargarDatos(barbero.id);
+}, [barbero, periodo, desde, hasta]);
 
   const cargarDatos = async (barberoId: string) => {
-    setLoading(true);
-    try {
-      const periodoParams = getPeriodoParams();
-      const [resTurnos, resGastos] = await Promise.all([
-        fetch(`/api/barberos/${barberoId}/mis-turnos${periodoParams ? "?" + periodoParams : ""}`),
-        fetch(`/api/barberos/${barberoId}/mis-gastos`),
-      ]);
-      const dataTurnos = await resTurnos.json();
-      const dataGastos = await resGastos.json();
-      setTurnos(dataTurnos.turnos || []);
-      setGastos(dataGastos.gastos || []);
-    } catch {
-      console.error("Error al cargar datos");
-    } finally {
-      setLoading(false);
+  setLoading(true);
+  try {
+    const ahora = new Date();
+    let paramStr = "";
+
+    if (periodo === "mes_actual") {
+      const d = new Date(ahora.getFullYear(), ahora.getMonth(), 1).toISOString().split("T")[0];
+      const h = new Date(ahora.getFullYear(), ahora.getMonth() + 1, 0).toISOString().split("T")[0];
+      paramStr = `desde=${d}&hasta=${h}`;
+    } else if (periodo === "mes_anterior") {
+      const d = new Date(ahora.getFullYear(), ahora.getMonth() - 1, 1).toISOString().split("T")[0];
+      const h = new Date(ahora.getFullYear(), ahora.getMonth(), 0).toISOString().split("T")[0];
+      paramStr = `desde=${d}&hasta=${h}`;
+    } else if (periodo === "personalizado" && desde && hasta) {
+      paramStr = `desde=${desde}&hasta=${hasta}`;
     }
-  };
+
+    const [resTurnos, resGastos] = await Promise.all([
+      fetch(`/api/barberos/${barberoId}/mis-turnos${paramStr ? "?" + paramStr : ""}`),
+      fetch(`/api/barberos/${barberoId}/mis-gastos`),
+    ]);
+    const dataTurnos = await resTurnos.json();
+    const dataGastos = await resGastos.json();
+    setTurnos(dataTurnos.turnos || []);
+    setGastos(dataGastos.gastos || []);
+  } catch {
+    console.error("Error al cargar datos");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const agregarGasto = async () => {
     if (!form.nombre || !form.monto) return;
