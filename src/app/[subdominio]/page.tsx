@@ -212,7 +212,7 @@ export default function SitioPublicoPage() {
                     <span className="sitio-servicio-precio">${s.precio.toLocaleString("es-AR")}</span>
                     <span className="sitio-servicio-dur">{s.duracion} min</span>
                   </div>
-                  
+                  <a
                     href="#reserva"
                     className="sitio-servicio-btn"
                     onClick={() => { setServicioId(s.id); setStep(1); }}
@@ -245,7 +245,7 @@ export default function SitioPublicoPage() {
                   <div className="sitio-barbero-name">{b.nombre}</div>
                   <div className="sitio-barbero-spec">{b.especialidad || "Barbero"}</div>
                   
-                    href="#reserva"
+                    <a href="#reserva"
                     className="sitio-barbero-btn"
                     onClick={() => { setBarberoId(b.id); setStep(1); }}
                   >
