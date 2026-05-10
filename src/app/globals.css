@@ -1345,9 +1345,9 @@ body {
 .auth-form { display: flex; flex-direction: column; gap: 0.8rem; }
 .auth-field { display: flex; flex-direction: column; gap: 0.35rem; }
 .auth-pass-wrap { position: relative; }
-.auth-pass-wrap .config-input { padding-right: 3.2rem; }
+.auth-pass-wrap .config-input { padding-right: 2.4rem; }
 .auth-pass-toggle {
-  position: absolute; right: 0.8rem; top: 50%;
+  position: absolute; right: 0.6rem; top: 50%;
   transform: translateY(-50%);
   background: none; border: none; cursor: pointer;
   color: rgba(255,255,255,0.4); font-size: 0.75rem;
