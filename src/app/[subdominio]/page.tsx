@@ -243,7 +243,7 @@ export default function SitioPublicoPage() {
               <>El corte<br />que te<br /><em>define.</em></>
             )}
           </h1>
-          <p className="sitio-hero-desc" style={{ textAlign: 'center', marginBottom: '2rem', width: '100%', display: 'block' }}>
+          <p style={{ textAlign: 'center', marginBottom: '2rem', width: '100%', display: 'block', color: 'var(--sitio-texto)', fontSize: '1.1rem', lineHeight: 1.5 }}>
             {barberia.heroDescripcion || barberia.descripcion || "Expertos en cortes modernos. Reserva tu turno online."}
           </p>
           <div className="sitio-hero-actions" style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
