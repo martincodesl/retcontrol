@@ -15,8 +15,10 @@ export async function GET(
       );
     }
 
-    const barberia = await prisma.barberia.findUnique({
-      where: { subdominio: params.subdominio },
+    const barberia = await prisma.barberia.findFirst({
+      where: {
+        subdominio: { equals: subdominio, mode: "insensitive" },
+      },
       select: {
         id: true,
         nombre: true,
@@ -32,6 +34,7 @@ export async function GET(
         heroFotoUrl: true,
         heroTitulo: true,
         heroDescripcion: true,
+        activa: true,
         barberos: {
           where: { activo: true },
           select: { id: true, nombre: true, especialidad: true },

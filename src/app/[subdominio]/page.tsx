@@ -26,6 +26,14 @@ interface Barberia {
   descripcion: string | null;
   direccion: string | null;
   telefono: string | null;
+  colorPrimario?: string | null;
+  colorSecundario?: string | null;
+  colorFondo?: string | null;
+  colorTexto?: string | null;
+  logoUrl?: string | null;
+  heroFotoUrl?: string | null;
+  heroTitulo?: string | null;
+  heroDescripcion?: string | null;
   barberos: Barbero[];
   servicios: Servicio[];
 }
@@ -66,11 +74,16 @@ export default function SitioPublicoPage() {
   useEffect(() => {
     const cargar = async () => {
       try {
-        const res  = await fetch(`/api/publico/${subdominio}`);
+        const res  = await fetch(`/api/publico/${encodeURIComponent(subdominio.toLowerCase())}`);
         const data = await res.json();
+        if (!res.ok) {
+          console.error("Error al cargar barberia:", data.error || res.statusText);
+          setBarberia(null);
+          return;
+        }
         setBarberia(data.barberia);
-      } catch {
-        console.error("Error al cargar barberia");
+      } catch (error) {
+        console.error("Error al cargar barberia", error);
       } finally {
         setLoading(false);
       }
@@ -218,10 +231,10 @@ export default function SitioPublicoPage() {
             {barberia.heroDescripcion || barberia.descripcion || "Expertos en cortes modernos. Reserva tu turno online."}
           </p>
           <section className="sitio-hero" style={barberia.heroFotoUrl ? {
-  backgroundImage: `url(${barberia.heroFotoUrl})`,
-  backgroundSize: "cover",
-  backgroundPosition: "center",
-} : {}}></section>
+            backgroundImage: `url(${barberia.heroFotoUrl})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          } : {}}></section>
           <div className="sitio-hero-actions">
             <a href="#reserva" className="btn-primary">Reservar turno →</a>
             <a href="#servicios" className="btn-secondary">Ver servicios</a>
