@@ -172,7 +172,7 @@ export default function SitioPublicoPage() {
   );
 
   return (
-    <div className="sitio-wrapper sitio-${subdominio}">
+    <div className={`sitio-wrapper sitio-${subdominio}`}>
           {/* Estilos dinámicos según la barbería */}
     <style>{`
       .sitio-${subdominio} {
