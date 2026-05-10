@@ -221,9 +221,20 @@ export default function SitioPublicoPage() {
       </nav>
 
       {/* HERO */}
-      <section className="sitio-hero" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', textAlign: 'center' }}>
-        <div className="sitio-hero-bg" />
-        <div className="sitio-hero-content">
+      <section className="sitio-hero" style={{ minHeight: '100vh', position: 'relative' }}>
+        <div className="sitio-hero-bg" style={barberia.heroFotoUrl ? {
+          backgroundImage: `url(${barberia.heroFotoUrl})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        } : {}} />
+        <div className="sitio-hero-content" style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          textAlign: 'center',
+          width: '100%'
+        }}>
           <div className="sitio-hero-tag">{barberia.slogan || "Barberia Premium"}</div>
           <h1 className="sitio-hero-title">
             {barberia.heroTitulo ? (
@@ -235,11 +246,6 @@ export default function SitioPublicoPage() {
           <p className="sitio-hero-desc">
             {barberia.heroDescripcion || barberia.descripcion || "Expertos en cortes modernos. Reserva tu turno online."}
           </p>
-          <section className="sitio-hero" style={barberia.heroFotoUrl ? {
-            backgroundImage: `url(${barberia.heroFotoUrl})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          } : {}}></section>
           <div className="sitio-hero-actions">
             <a href="#reserva" className="btn-primary">Reservar turno →</a>
             <a href="#servicios" className="btn-secondary">Ver servicios</a>
