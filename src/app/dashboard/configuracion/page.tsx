@@ -196,10 +196,6 @@ export default function ConfiguracionPage() {
               <input className="config-input" value={form.telefono} onChange={e => setForm({ ...form, telefono: e.target.value })} placeholder="+54 11 1234-5678" />
             </div>
           </div>
-          <div className="config-field" style={{ marginTop: "0.5rem" }}>
-            <label className="config-label">Descripcion</label>
-            <textarea className="config-input config-textarea" value={form.descripcion} onChange={e => setForm({ ...form, descripcion: e.target.value })} placeholder="Contales a tus clientes quienes son..." />
-          </div>
         </div>
       )}
 
