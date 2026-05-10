@@ -23,6 +23,8 @@ interface Barbero {
 interface Barberia {
   id: string;
   nombre: string;
+  subdominio: string;
+  slogan?: string | null;
   descripcion: string | null;
   direccion: string | null;
   telefono: string | null;
@@ -223,7 +225,7 @@ export default function SitioPublicoPage() {
         <div className="sitio-hero-bg" />
         <div className="sitio-hero-deco">✂</div>
         <div className="sitio-hero-content">
-          <div className="sitio-hero-tag">Barberia Premium</div>
+          <div className="sitio-hero-tag">{barberia.slogan || "Barberia Premium"}</div>
           <h1 className="sitio-hero-title">
             {barberia.heroTitulo ? (
     <>      {barberia.heroTitulo}</>

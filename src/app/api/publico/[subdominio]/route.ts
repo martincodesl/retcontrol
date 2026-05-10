@@ -24,6 +24,7 @@ export async function GET(
         nombre: true,
         subdominio: true,
         descripcion: true,
+        slogan: true,
         direccion: true,
         telefono: true,
         colorPrimario: true,
