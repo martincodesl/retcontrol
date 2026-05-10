@@ -1344,15 +1344,13 @@ body {
 }
 .auth-form { display: flex; flex-direction: column; gap: 0.8rem; }
 .auth-field { display: flex; flex-direction: column; gap: 0.35rem; }
-.auth-pass-wrap { position: relative; }
-.auth-pass-wrap .config-input { padding-right: 2.4rem; }
+.auth-pass-wrap { display: flex; align-items: center; }
+.auth-pass-wrap .config-input { width: calc(100% - 2.4rem); padding-right: 0; }
 .auth-pass-toggle {
-  position: absolute; right: 0.6rem; top: 50%;
-  transform: translateY(-50%);
   background: none; border: none; cursor: pointer;
   color: rgba(255,255,255,0.4); font-size: 0.75rem;
   font-family: var(--font-dm-sans), sans-serif;
-  transition: color 0.15s;
+  transition: color 0.15s; margin-left: 0.5rem;
 }
 .auth-pass-toggle:hover { color: var(--gold); }
 .auth-forgot {
