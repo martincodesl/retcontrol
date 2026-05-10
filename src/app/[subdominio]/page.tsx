@@ -182,6 +182,9 @@ export default function SitioPublicoPage() {
         --sitio-texto:      ${barberia.colorTexto      || "#FFFFFF"};
         --gold: var(--sitio-primario);
       }
+      body {
+        --gold: ${barberia.colorPrimario   || "#C9A84C"};
+      }
       .sitio-${subdominio} .sitio-wrapper        { background: var(--sitio-fondo); color: var(--sitio-texto); }
       .sitio-${subdominio} .sitio-nav            { background: color-mix(in srgb, var(--sitio-fondo) 85%, transparent); border-color: color-mix(in srgb, var(--sitio-primario) 20%, transparent); }
       .sitio-${subdominio} .sitio-nav-logo em    { color: var(--sitio-primario); }
