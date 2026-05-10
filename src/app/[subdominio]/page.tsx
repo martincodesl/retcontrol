@@ -638,15 +638,42 @@ export default function SitioPublicoPage() {
           </div>
           <div className="sitio-ubicacion-grid">
             <div className="sitio-map-placeholder">
-              <MapPin size={32} color="var(--gold)" />
-              <div style={{ fontWeight: 600 }}>{barberia.direccion || "Direccion no configurada"}</div>
+              {barberia.direccion ? (
+                <a
+                  href={`https://www.google.com/maps?q=${encodeURIComponent(barberia.direccion)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}
+                >
+                  <MapPin size={32} color="var(--gold)" />
+                  <div style={{ fontWeight: 600 }}>{barberia.direccion}</div>
+                </a>
+              ) : (
+                <>
+                  <MapPin size={32} color="var(--gold)" />
+                  <div style={{ fontWeight: 600 }}>Dirección no configurada</div>
+                </>
+              )}
             </div>
             <div className="sitio-info-items">
               <div className="sitio-info-item">
                 <MapPin size={18} color="var(--gold)" />
                 <div>
                   <div className="sitio-info-label">Direccion</div>
-                  <div className="sitio-info-val">{barberia.direccion || "No configurada"}</div>
+                  <div className="sitio-info-val">
+                    {barberia.direccion ? (
+                      <a
+                        href={`https://www.google.com/maps?q=${encodeURIComponent(barberia.direccion)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: 'inherit', textDecoration: 'none' }}
+                      >
+                        {barberia.direccion}
+                      </a>
+                    ) : (
+                      "No configurada"
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="sitio-info-item">
