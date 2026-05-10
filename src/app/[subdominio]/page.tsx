@@ -221,9 +221,9 @@ export default function SitioPublicoPage() {
       </nav>
 
       {/* HERO */}
-      <section className="sitio-hero" style={{ minHeight: '100vh' }}>
+      <section className="sitio-hero" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', textAlign: 'center' }}>
         <div className="sitio-hero-bg" />
-        <div className="sitio-hero-content" style={{ textAlign: 'center' }}>
+        <div className="sitio-hero-content">
           <div className="sitio-hero-tag">{barberia.slogan || "Barberia Premium"}</div>
           <h1 className="sitio-hero-title">
             {barberia.heroTitulo ? (
