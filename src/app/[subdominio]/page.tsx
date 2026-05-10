@@ -235,15 +235,15 @@ export default function SitioPublicoPage() {
           textAlign: 'center',
           width: '100%'
         }}>
-          <div className="sitio-hero-tag" style={{ textAlign: 'center', marginBottom: '1rem' }}>{barberia.slogan || "Barberia Premium"}</div>
-          <h1 className="sitio-hero-title" style={{ textAlign: 'center', marginBottom: '1rem' }}>
+          <div className="sitio-hero-tag" style={{ textAlign: 'center', marginBottom: '1rem', width: '100%', display: 'block' }}>{barberia.slogan || "Barberia Premium"}</div>
+          <h1 className="sitio-hero-title" style={{ textAlign: 'center', marginBottom: '1rem', width: '100%', display: 'block' }}>
             {barberia.heroTitulo ? (
     <>      {barberia.heroTitulo}</>
             ) : (
               <>El corte<br />que te<br /><em>define.</em></>
             )}
           </h1>
-          <p className="sitio-hero-desc" style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <p className="sitio-hero-desc" style={{ textAlign: 'center', marginBottom: '2rem', width: '100%', display: 'block' }}>
             {barberia.heroDescripcion || barberia.descripcion || "Expertos en cortes modernos. Reserva tu turno online."}
           </p>
           <div className="sitio-hero-actions" style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
