@@ -208,7 +208,7 @@ export default function SitioPublicoPage() {
 
       {/* NAV */}
       <nav className="sitio-nav">
-        <div className="sitio-nav-logo"><em>{barberia.nombre}</em></div>
+        <div className="sitio-nav-logo"><em>{barberia.nombre || barberia.subdominio}</em></div>
         <div className="sitio-nav-links">
           <a href="#servicios">Servicios</a>
           <a href="#equipo">Equipo</a>
@@ -662,7 +662,7 @@ export default function SitioPublicoPage() {
       {/* FOOTER */}
       <footer className="sitio-footer">
         <div className="sitio-footer-inner">
-          <div className="sitio-footer-logo"><em>{barberia.nombre}</em></div>
+          <div className="sitio-footer-logo"><em>{barberia.nombre || barberia.subdominio}</em></div>
           <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
             <Link href={`/${subdominio}/barberos`} style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.25)", textDecoration: "none" }}>
               Acceso barberos
