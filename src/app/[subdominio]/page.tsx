@@ -180,6 +180,7 @@ export default function SitioPublicoPage() {
         --sitio-secundario: ${barberia.colorSecundario || "#1C1C1E"};
         --sitio-fondo:      ${barberia.colorFondo      || "#0D0D0D"};
         --sitio-texto:      ${barberia.colorTexto      || "#FFFFFF"};
+        --gold: var(--sitio-primario);
       }
       .sitio-${subdominio} .sitio-wrapper        { background: var(--sitio-fondo); color: var(--sitio-texto); }
       .sitio-${subdominio} .sitio-nav            { background: color-mix(in srgb, var(--sitio-fondo) 85%, transparent); border-color: color-mix(in srgb, var(--sitio-primario) 20%, transparent); }
@@ -289,7 +290,7 @@ export default function SitioPublicoPage() {
             <div className="sitio-barberos-grid">
               {barberia.barberos.map((b) => (
                 <div key={b.id} className="sitio-barbero-card">
-                  <div className="sitio-barbero-avatar" style={{ background: "rgba(201,168,76,0.15)", color: "var(--gold)" }}>
+                  <div className="sitio-barbero-avatar" style={{ background: "color-mix(in srgb, var(--sitio-primario) 15%, transparent)", color: "var(--gold)" }}>
                     {b.nombre.slice(0, 2).toUpperCase()}
                   </div>
                   <div className="sitio-barbero-name">{b.nombre}</div>
@@ -552,7 +553,7 @@ export default function SitioPublicoPage() {
                       <div className="sitio-form-title">3. Tus datos</div>
 
                       {/* Resumen */}
-                      <div style={{ background: "rgba(201,168,76,0.08)", border: "1px solid rgba(201,168,76,0.2)", borderRadius: 8, padding: "0.8rem 1rem", marginBottom: "1.2rem", fontSize: "0.82rem" }}>
+                      <div style={{ background: "color-mix(in srgb, var(--sitio-primario) 8%, transparent)", border: "1px solid color-mix(in srgb, var(--sitio-primario) 20%, transparent)", borderRadius: 8, padding: "0.8rem 1rem", marginBottom: "1.2rem", fontSize: "0.82rem" }}>
                         <div style={{ marginBottom: "0.3rem" }}>
                           <span style={{ color: "rgba(255,255,255,0.4)" }}>Servicio: </span>
                           <span style={{ color: "var(--gold)", fontWeight: 600 }}>{servicio?.nombre}</span>
