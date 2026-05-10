@@ -16,17 +16,29 @@ export async function GET(
     }
 
     const barberia = await prisma.barberia.findUnique({
-      where: {
-        subdominio,
-      },
-      include: {
-        servicios: {
-          where: { activo: true },
-          orderBy: { nombre: "asc" },
-        },
+      where: { subdominio: params.subdominio },
+      select: {
+        id: true,
+        nombre: true,
+        subdominio: true,
+        descripcion: true,
+        direccion: true,
+        telefono: true,
+        colorPrimario: true,
+        colorSecundario: true,
+        colorFondo: true,
+        colorTexto: true,
+        logoUrl: true,
+        heroFotoUrl: true,
+        heroTitulo: true,
+        heroDescripcion: true,
         barberos: {
           where: { activo: true },
-          orderBy: { nombre: "asc" },
+          select: { id: true, nombre: true, especialidad: true },
+        },
+        servicios: {
+          where: { activo: true },
+          select: { id: true, nombre: true, precio: true, duracion: true, color: true, descripcion: true },
         },
       },
     });

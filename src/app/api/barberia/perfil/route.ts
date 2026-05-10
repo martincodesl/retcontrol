@@ -21,6 +21,14 @@ export async function GET() {
         telefono: true,
         email: true,
         plan: true,
+        colorPrimario: true,
+        colorSecundario: true,
+        colorFondo: true,
+        colorTexto: true,
+        logoUrl: true,
+        heroFotoUrl: true,
+        heroTitulo: true,
+        heroDescripcion: true,
       },
     });
 
@@ -38,16 +46,28 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const { nombre, slogan, descripcion, direccion, telefono } = await req.json();
+    const {
+      nombre, slogan, descripcion, direccion, telefono,
+      colorPrimario, colorSecundario, colorFondo, colorTexto,
+      logoUrl, heroFotoUrl, heroTitulo, heroDescripcion,
+    } = await req.json();
 
     const barberia = await prisma.barberia.update({
       where: { id: session.user.id },
       data: {
-        nombre:      nombre      || undefined,
-        slogan:      slogan      || undefined,
-        descripcion: descripcion || undefined,
-        direccion:   direccion   || undefined,
-        telefono:    telefono    || undefined,
+        nombre:          nombre          || undefined,
+        slogan:          slogan          || undefined,
+        descripcion:     descripcion     || undefined,
+        direccion:       direccion       || undefined,
+        telefono:        telefono        || undefined,
+        colorPrimario:   colorPrimario   || undefined,
+        colorSecundario: colorSecundario || undefined,
+        colorFondo:      colorFondo      || undefined,
+        colorTexto:      colorTexto      || undefined,
+        logoUrl:         logoUrl         || undefined,
+        heroFotoUrl:     heroFotoUrl     || undefined,
+        heroTitulo:      heroTitulo      || undefined,
+        heroDescripcion: heroDescripcion || undefined,
       },
     });
 

@@ -159,7 +159,35 @@ export default function SitioPublicoPage() {
   );
 
   return (
-    <div className="sitio-wrapper">
+    <div className="sitio-wrapper sitio-${subdominio}">
+          {/* Estilos dinámicos según la barbería */}
+    <style>{`
+      .sitio-${subdominio} {
+        --sitio-primario:   ${barberia.colorPrimario   || "#C9A84C"};
+        --sitio-secundario: ${barberia.colorSecundario || "#1C1C1E"};
+        --sitio-fondo:      ${barberia.colorFondo      || "#0D0D0D"};
+        --sitio-texto:      ${barberia.colorTexto      || "#FFFFFF"};
+      }
+      .sitio-${subdominio} .sitio-wrapper        { background: var(--sitio-fondo); color: var(--sitio-texto); }
+      .sitio-${subdominio} .sitio-nav            { background: color-mix(in srgb, var(--sitio-fondo) 85%, transparent); border-color: color-mix(in srgb, var(--sitio-primario) 20%, transparent); }
+      .sitio-${subdominio} .sitio-nav-logo em    { color: var(--sitio-primario); }
+      .sitio-${subdominio} .sitio-nav-cta        { background: var(--sitio-primario); color: var(--sitio-fondo); }
+      .sitio-${subdominio} .sitio-hero-tag       { color: var(--sitio-primario); }
+      .sitio-${subdominio} .sitio-hero-title em  { color: var(--sitio-primario); }
+      .sitio-${subdominio} .sitio-hero-bg        { background: radial-gradient(ellipse 60% 80% at 70% 50%, color-mix(in srgb, var(--sitio-primario) 10%, transparent) 0%, transparent 60%); }
+      .sitio-${subdominio} .btn-primary          { background: var(--sitio-primario); color: var(--sitio-fondo); }
+      .sitio-${subdominio} .btn-secondary        { border-color: color-mix(in srgb, var(--sitio-texto) 20%, transparent); color: var(--sitio-texto); }
+      .sitio-${subdominio} .sitio-section-dark   { background: var(--sitio-secundario); }
+      .sitio-${subdominio} .sitio-section-title em { color: var(--sitio-primario); }
+      .sitio-${subdominio} .section-label        { color: var(--sitio-primario); }
+      .sitio-${subdominio} .sitio-servicio-precio { color: var(--sitio-primario); }
+      .sitio-${subdominio} .sitio-servicio-btn   { background: color-mix(in srgb, var(--sitio-primario) 10%, transparent); border-color: color-mix(in srgb, var(--sitio-primario) 20%, transparent); color: var(--sitio-primario); }
+      .sitio-${subdominio} .sitio-barbero-spec   { color: var(--sitio-primario); }
+      .sitio-${subdominio} .sitio-barbero-btn    { background: color-mix(in srgb, var(--sitio-primario) 10%, transparent); border-color: color-mix(in srgb, var(--sitio-primario) 20%, transparent); color: var(--sitio-primario); }
+      .sitio-${subdominio} .sitio-reserva-form   { border-color: color-mix(in srgb, var(--sitio-primario) 15%, transparent); }
+      .sitio-${subdominio} .sitio-footer-logo em { color: var(--sitio-primario); }
+      .sitio-${subdominio} .sitio-footer         { border-color: color-mix(in srgb, var(--sitio-primario) 10%, transparent); }
+    `}</style>
 
       {/* NAV */}
       <nav className="sitio-nav">
@@ -180,11 +208,20 @@ export default function SitioPublicoPage() {
         <div className="sitio-hero-content">
           <div className="sitio-hero-tag">Barberia Premium</div>
           <h1 className="sitio-hero-title">
-            El corte<br />que te<br /><em>define.</em>
+            {barberia.heroTitulo ? (
+    <>      {barberia.heroTitulo}</>
+            ) : (
+              <>El corte<br />que te<br /><em>define.</em></>
+            )}
           </h1>
           <p className="sitio-hero-desc">
-            {barberia.descripcion || "Expertos en cortes modernos. Reserva tu turno online."}
+            {barberia.heroDescripcion || barberia.descripcion || "Expertos en cortes modernos. Reserva tu turno online."}
           </p>
+          <section className="sitio-hero" style={barberia.heroFotoUrl ? {
+  backgroundImage: `url(${barberia.heroFotoUrl})`,
+  backgroundSize: "cover",
+  backgroundPosition: "center",
+} : {}}></section>
           <div className="sitio-hero-actions">
             <a href="#reserva" className="btn-primary">Reservar turno →</a>
             <a href="#servicios" className="btn-secondary">Ver servicios</a>

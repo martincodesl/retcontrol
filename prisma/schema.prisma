@@ -7,7 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ── BARBERIA ──────────────────────────────────────────────
 model Barberia {
   id          String   @id @default(cuid())
   nombre      String
@@ -21,6 +20,16 @@ model Barberia {
   plan        Plan     @default(STARTER)
   activa      Boolean  @default(true)
   creadaEn    DateTime @default(now())
+
+  // Personalización del sitio
+  colorPrimario    String?  @default("#C9A84C")
+  colorSecundario  String?  @default("#1C1C1E")
+  colorFondo       String?  @default("#0D0D0D")
+  colorTexto       String?  @default("#FFFFFF")
+  logoUrl          String?
+  heroFotoUrl      String?
+  heroTitulo       String?
+  heroDescripcion  String?
 
   barberos  Barbero[]
   servicios Servicio[]
