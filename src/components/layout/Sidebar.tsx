@@ -128,7 +128,7 @@ export default function Sidebar() {
               <img 
                 src="/retCONTROL.svg" // 👈 Cambia esto por la ruta real de tu logo en /public (ej: /logo.png, /favicon.ico)
                 alt="RETcontrol Logo" 
-                style={{ width: "24px", height: "24px", objectFit: "contain" }} 
+                style={{ width: "36px", height: "36px", objectFit: "contain" }} 
               />
             </div>
           ) : (
