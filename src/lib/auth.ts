@@ -18,6 +18,7 @@ declare module "next-auth" {
       plan?: string;
       nombre?: string;
       email?: string;
+      name?: string | null; // 💡 Agrega esta línea aquí
     };
   }
 }
