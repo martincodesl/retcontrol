@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 // 💡 1. Extendemos los tipos de NextAuth para que reconozcan tus campos personalizados
 declare module "next-auth" {
   interface User {
-    id?: string;
+    id: string;
     subdominio?: string;
     plan?: string;
     nombre?: string;
