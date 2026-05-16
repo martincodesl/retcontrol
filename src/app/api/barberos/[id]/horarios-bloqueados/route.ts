@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+function getBarberoId(req: NextRequest) {
+  const pathParts = new URL(req.url).pathname.split("/").filter(Boolean);
+  return pathParts[2];
+}
+
+export async function GET(req: NextRequest) {
   try {
+    const barberoId = getBarberoId(req);
     const bloqueados = await prisma.horarioBloqueado.findMany({
       where: {
-        barberoId: params.id,
+        barberoId,
         fecha: { gte: new Date() },
       },
       orderBy: { fecha: "asc" },
@@ -20,11 +23,9 @@ export async function GET(
   }
 }
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(req: NextRequest) {
   try {
+    const barberoId = getBarberoId(req);
     const { fecha, motivo } = await req.json();
     if (!fecha) {
       return NextResponse.json({ error: "La fecha es obligatoria" }, { status: 400 });
@@ -33,7 +34,7 @@ export async function POST(
     // Verificar que no esté ya bloqueado
     const existente = await prisma.horarioBloqueado.findFirst({
       where: {
-        barberoId: params.id,
+        barberoId,
         fecha: new Date(fecha),
       },
     });
@@ -48,7 +49,7 @@ export async function POST(
       data: {
         fecha: new Date(fecha),
         motivo: motivo || null,
-        barberoId: params.id,
+        barberoId: barberoId,
       },
     });
     return NextResponse.json({ ok: true, bloqueado });
@@ -58,11 +59,9 @@ export async function POST(
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(req: NextRequest) {
   try {
+    const barberoId = getBarberoId(req);
     const { bloqueadoId } = await req.json();
     await prisma.horarioBloqueado.delete({ where: { id: bloqueadoId } });
     return NextResponse.json({ ok: true });

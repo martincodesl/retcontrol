@@ -76,17 +76,21 @@ function GraficoTorta({ datos }: { datos: { label: string; valor: number; color:
     </div>
   );
 
-  let acumulado = 0;
   const radio = 70;
   const cx = 90;
   const cy = 90;
+  const porcentajes = datos.map((d) => d.valor / total);
+  const acumulados = porcentajes.reduce<number[]>((acc, pct, index) => {
+    const inicio = index === 0 ? 0 : acc[index - 1];
+    acc.push(inicio + pct);
+    return acc;
+  }, []);
 
-  const sectores = datos.map((d) => {
-    const inicio = acumulado;
-    const pct = d.valor / total;
-    acumulado += pct;
+  const sectores = datos.map((d, index) => {
+    const inicio = index === 0 ? 0 : acumulados[index - 1];
+    const pct = porcentajes[index];
     const a1 = inicio * 2 * Math.PI - Math.PI / 2;
-    const a2 = acumulado * 2 * Math.PI - Math.PI / 2;
+    const a2 = acumulados[index] * 2 * Math.PI - Math.PI / 2;
     const x1 = cx + radio * Math.cos(a1);
     const y1 = cy + radio * Math.sin(a1);
     const x2 = cx + radio * Math.cos(a2);

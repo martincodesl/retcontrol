@@ -3,6 +3,23 @@ import Credentials from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
+type BarberiaUser = {
+  id: string;
+  email: string;
+  name: string;
+  subdominio: string;
+  plan: string;
+  nombre: string;
+};
+
+type SessionUser = {
+  id: string;
+  subdominio?: string;
+  plan?: string;
+  nombre?: string;
+  email?: string;
+};
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
   pages: {
@@ -11,19 +28,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
-        token.subdominio = (user as any).subdominio;
-        token.plan = (user as any).plan;
-        token.nombre = (user as any).nombre;
+        const barberiaUser = user as BarberiaUser;
+        token.id = barberiaUser.id;
+        token.subdominio = barberiaUser.subdominio;
+        token.plan = barberiaUser.plan;
+        token.nombre = barberiaUser.nombre;
       }
       return token;
     },
     async session({ session, token }) {
       if (token) {
-        session.user.id = token.id as string;
-        (session.user as any).subdominio = token.subdominio;
-        (session.user as any).plan = token.plan;
-        (session.user as any).nombre = token.nombre;
+        const sessionUser = session.user as SessionUser;
+        sessionUser.id = token.id as string;
+        sessionUser.subdominio = token.subdominio;
+        sessionUser.plan = token.plan;
+        sessionUser.nombre = token.nombre;
       }
       return session;
     },

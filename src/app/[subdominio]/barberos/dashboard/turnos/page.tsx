@@ -45,18 +45,7 @@ export default function TurnosBarberoPage() {
     new Date().toISOString().split("T")[0]
   );
 
-  useEffect(() => {
-    const session = localStorage.getItem("barbero_session");
-    if (!session) {
-      router.push(`/${subdominio}/barberos`);
-      return;
-    }
-    const barberoData = JSON.parse(session);
-    setBarbero(barberoData);
-    cargarTurnos(barberoData.id, fechaSeleccionada);
-  }, []);
-
-  const cargarTurnos = async (barberoId: string, fecha: string) => {
+  async function cargarTurnos(barberoId: string, fecha: string) {
     setLoading(true);
     try {
       const res = await fetch(`/api/barberos/${barberoId}/mis-turnos?fecha=${fecha}`);
@@ -67,7 +56,18 @@ export default function TurnosBarberoPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }
+
+  useEffect(() => {
+    const session = localStorage.getItem("barbero_session");
+    if (!session) {
+      router.push(`/${subdominio}/barberos`);
+      return;
+    }
+    const barberoData = JSON.parse(session);
+    setBarbero(barberoData);
+    cargarTurnos(barberoData.id, fechaSeleccionada);
+  }, []);
 
   const cambiarFecha = (fecha: string) => {
     setFechaSeleccionada(fecha);

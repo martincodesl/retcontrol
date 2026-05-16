@@ -28,6 +28,18 @@ export default function HorariosBarberoPage() {
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
 
+  async function cargarBloqueados(barberoId: string) {
+    try {
+      const res = await fetch(`/api/barberos/${barberoId}/horarios-bloqueados`);
+      const data = await res.json();
+      setBloqueados(data.bloqueados || []);
+    } catch {
+      console.error("Error al cargar horarios");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
     const session = localStorage.getItem("barbero_session");
     if (!session) {
@@ -38,18 +50,6 @@ export default function HorariosBarberoPage() {
     setBarbero(barberoData);
     cargarBloqueados(barberoData.id);
   }, []);
-
-  const cargarBloqueados = async (barberoId: string) => {
-    try {
-      const res = await fetch(`/api/barberos/${barberoId}/horarios-bloqueados`);
-      const data = await res.json();
-      setBloqueados(data.bloqueados || []);
-    } catch {
-      console.error("Error al cargar horarios");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const bloquearDia = async () => {
     if (!form.fecha) {

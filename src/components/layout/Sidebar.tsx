@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
   LayoutDashboard,
   Calendar,
@@ -31,6 +32,18 @@ export default function Sidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { data: session } = useSession();
+
+  const subdominio = session?.user?.subdominio as string | undefined;
+  const nombreBarberia = (session?.user?.nombre as string) || session?.user?.name || "Barbería";
+
+  const getInitials = (name: string) => {
+    const parts = name.split(" ").filter(Boolean);
+    if (parts.length === 0) return "RC";
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  };
+  const avatarText = getInitials(nombreBarberia || (subdominio || "rc"));
 
   return (
     <>
@@ -88,9 +101,9 @@ export default function Sidebar() {
           })}
         </nav>
         <div className="sidebar-profile" style={{ padding: "1rem 1.2rem" }}>
-          <div className="sidebar-avatar">KC</div>
+          <div className="sidebar-avatar">{avatarText}</div>
           <div>
-            <div className="sidebar-profile-name">King's Cuts</div>
+            <div className="sidebar-profile-name">{nombreBarberia}</div>
             <div className="sidebar-profile-role">Plan Pro</div>
           </div>
         </div>
@@ -109,11 +122,11 @@ export default function Sidebar() {
 
         {/* Logo */}
         <div className="sidebar-logo">
-          <div className="sidebar-avatar" style={{ flexShrink: 0 }}>KC</div>
+          <div className="sidebar-avatar" style={{ flexShrink: 0 }}>{avatarText}</div>
           {!collapsed && (
             <div>
               <div className="sidebar-logo-name">RET<span>control</span></div>
-              <div className="sidebar-logo-sub">kings-cuts.retcontrol.app</div>
+              <div className="sidebar-logo-sub">{subdominio ? `${subdominio}.retcontrol.com` : "kings-cuts.retcontrol.app"}</div>
             </div>
           )}
         </div>
@@ -154,9 +167,9 @@ export default function Sidebar() {
         {/* Profile */}
         {!collapsed && (
           <div className="sidebar-profile">
-            <div className="sidebar-avatar">KC</div>
+            <div className="sidebar-avatar">{avatarText}</div>
             <div>
-              <div className="sidebar-profile-name">King's Cuts</div>
+              <div className="sidebar-profile-name">{nombreBarberia}</div>
               <div className="sidebar-profile-role">Plan Pro</div>
             </div>
           </div>

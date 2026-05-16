@@ -46,6 +46,7 @@ model Barbero {
   foto         String?
   activo       Boolean  @default(true)
   creadoEn     DateTime @default(now())
+  insumos     InsumoBarbero[]
 
   barberiaId   String
   barberia     Barberia @relation(fields: [barberiaId], references: [id])
@@ -129,6 +130,41 @@ model GastoBarbero {
   barbero   Barbero @relation(fields: [barberoId], references: [id])
 }
 
+// ── INSUMO DEL BARBERO ────────────────────────────────────────────────────────
+model InsumoBarbero {
+  id          String        @id @default(cuid())
+  nombre      String
+  tipo        TipoInsumo
+  // Para tipo PORCENTAJE
+  porcentaje  Float?
+  // Para tipo UNIDAD (ej: gramos de cera)
+  precioTotal Float?        // precio del envase/paquete completo
+  cantidadTotal Float?      // total de unidades (ej: 100g)
+  cantidadPorCorte Float?   // cuanto se usa por corte (ej: 2g)
+  unidad      String?       // "g", "ml", "unidad", etc.
+  // Para tipo FIJO
+  montoFijo   Float?
+  // Para tipo AMORTIZACION
+  precioMaquina Float?      // precio de compra de la maquina
+  cortesDeVida  Int?        // cantidad de cortes de vida util
+  creadoEn    DateTime      @default(now())
+
+  barberoId   String
+  barbero     Barbero       @relation(fields: [barberoId], references: [id])
+
+  servicios   InsumoServicio[]
+}
+
+// ── RELACION INSUMO-SERVICIO ──────────────────────────────────────────────────
+model InsumoServicio {
+  id          String        @id @default(cuid())
+  insumoId    String
+  insumo      InsumoBarbero @relation(fields: [insumoId], references: [id])
+  servicioId  String
+  // No relacionamos con Servicio directamente porque es de la barberia
+  // guardamos el id para filtrar
+}
+
 // ── ENUMS ─────────────────────────────────────────────────
 enum Plan {
   STARTER
@@ -151,4 +187,11 @@ enum CategoriaGasto {
   COMIDA
   ROPA
   OTROS
+}
+
+enum TipoInsumo {
+  PORCENTAJE
+  UNIDAD
+  FIJO
+  AMORTIZACION
 }

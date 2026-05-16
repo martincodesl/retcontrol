@@ -1,7 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect } from "react";
-import { Globe, Bell, Calendar, CreditCard, Shield, Save, Palette, Image } from "lucide-react";
+import { Globe, Bell, Calendar, CreditCard, Shield, Save, Palette, Image as ImageIcon } from "lucide-react";
 
 interface Barberia {
   nombre: string;
@@ -11,6 +12,24 @@ interface Barberia {
   telefono: string;
   subdominio: string;
   plan: string;
+  colorPrimario: string;
+  colorSecundario: string;
+  colorFondo: string;
+  colorTexto: string;
+  logoUrl: string;
+  heroFotoUrl: string;
+  heroTitulo: string;
+  heroDescripcion: string;
+}
+
+type ConfigTabId = "sitio" | "diseno" | "hero" | "notif" | "plan";
+
+interface ConfigForm {
+  nombre: string;
+  slogan: string;
+  descripcion: string;
+  direccion: string;
+  telefono: string;
   colorPrimario: string;
   colorSecundario: string;
   colorFondo: string;
@@ -40,14 +59,25 @@ export default function ConfiguracionPage() {
   const [recordatorios, setRecordatorios] = useState(true);
   const [confirmManual, setConfirmManual] = useState(false);
   const [turnosOnline, setTurnosOnline]   = useState(true);
-  const [tabActiva, setTabActiva]     = useState<"sitio" | "diseno" | "hero" | "notif" | "plan">("sitio");
+  const [tabActiva, setTabActiva]         = useState<ConfigTabId>("sitio");
 
-  const [form, setForm] = useState({
-    nombre: "", slogan: "", descripcion: "", direccion: "", telefono: "",
-    colorPrimario: "#C9A84C", colorSecundario: "#1C1C1E",
-    colorFondo: "#0D0D0D", colorTexto: "#FFFFFF",
-    logoUrl: "", heroFotoUrl: "", heroTitulo: "", heroDescripcion: "",
-  });
+  const initialForm: ConfigForm = {
+    nombre: "",
+    slogan: "",
+    descripcion: "",
+    direccion: "",
+    telefono: "",
+    colorPrimario: "#C9A84C",
+    colorSecundario: "#1C1C1E",
+    colorFondo: "#0D0D0D",
+    colorTexto: "#FFFFFF",
+    logoUrl: "",
+    heroFotoUrl: "",
+    heroTitulo: "",
+    heroDescripcion: "",
+  };
+
+  const [form, setForm] = useState<ConfigForm>(initialForm);
 
   useEffect(() => {
     const cargar = async () => {
@@ -116,7 +146,7 @@ export default function ConfiguracionPage() {
     </div>
   );
 
-  const tabs = [
+  const tabs: { id: ConfigTabId; label: string; icon: any }[] = [
     { id: "sitio",  label: "Mi Sitio",    icon: Globe    },
     { id: "diseno", label: "Diseño",      icon: Palette  },
     { id: "hero",   label: "Hero",        icon: Image    },
@@ -142,7 +172,7 @@ export default function ConfiguracionPage() {
           return (
             <button
               key={tab.id}
-              onClick={() => setTabActiva(tab.id as any)}
+              onClick={() => setTabActiva(tab.id)}
               style={{
                 background: "none", border: "none", cursor: "pointer",
                 padding: "0.6rem 1rem",
@@ -272,32 +302,37 @@ export default function ConfiguracionPage() {
               Colores personalizados
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-              {[
-                { key: "colorPrimario",   label: "Color primario",   desc: "Botones, acentos, links" },
-                { key: "colorSecundario", label: "Color secundario", desc: "Navbar, cards" },
-                { key: "colorFondo",      label: "Color de fondo",   desc: "Fondo general del sitio" },
-                { key: "colorTexto",      label: "Color de texto",   desc: "Texto principal" },
-              ].map(({ key, label, desc }) => (
-                <div key={key} className="config-field">
-                  <label className="config-label">{label}</label>
-                  <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.3)", marginBottom: "0.4rem" }}>{desc}</div>
-                  <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-                    <input
-                      type="color"
-                      value={(form as any)[key]}
-                      onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
-                      style={{ width: 40, height: 36, border: "none", background: "none", cursor: "pointer", borderRadius: 6, padding: 2 }}
-                    />
-                    <input
-                      className="config-input"
-                      value={(form as any)[key]}
-                      onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
-                      placeholder="#000000"
-                      style={{ flex: 1, marginBottom: 0 }}
-                    />
+              {(
+                [
+                  { key: "colorPrimario",   label: "Color primario",   desc: "Botones, acentos, links" },
+                  { key: "colorSecundario", label: "Color secundario", desc: "Navbar, cards" },
+                  { key: "colorFondo",      label: "Color de fondo",   desc: "Fondo general del sitio" },
+                  { key: "colorTexto",      label: "Color de texto",   desc: "Texto principal" },
+                ] as const
+              ).map(({ key, label, desc }) => {
+                const fieldKey = key as keyof ConfigForm;
+                return (
+                  <div key={key} className="config-field">
+                    <label className="config-label">{label}</label>
+                    <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.3)", marginBottom: "0.4rem" }}>{desc}</div>
+                    <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                      <input
+                        type="color"
+                        value={form[fieldKey]}
+                        onChange={e => setForm(f => ({ ...f, [fieldKey]: e.target.value }))}
+                        style={{ width: 40, height: 36, border: "none", background: "none", cursor: "pointer", borderRadius: 6, padding: 2 }}
+                      />
+                      <input
+                        className="config-input"
+                        value={form[fieldKey]}
+                        onChange={e => setForm(f => ({ ...f, [fieldKey]: e.target.value }))}
+                        placeholder="#000000"
+                        style={{ flex: 1, marginBottom: 0 }}
+                      />
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
@@ -307,8 +342,7 @@ export default function ConfiguracionPage() {
       {tabActiva === "hero" && (
         <div className="dash-panel">
           <div className="config-section-title">
-            <Image size={16} color="var(--gold)" />
-            Seccion Hero — portada del sitio
+              <ImageIcon size={16} color="var(--gold)" />
           </div>
 
           <div className="config-field" style={{ marginBottom: "0.8rem" }}>
@@ -341,7 +375,14 @@ export default function ConfiguracionPage() {
             />
             {form.logoUrl && (
               <div style={{ marginTop: "0.5rem" }}>
-                <img src={form.logoUrl} alt="Logo" style={{ width: 60, height: 60, objectFit: "contain", borderRadius: 8, background: "rgba(255,255,255,0.05)" }} />
+                <Image
+                  src={form.logoUrl}
+                  alt="Logo"
+                  width={60}
+                  height={60}
+                  unoptimized
+                  style={{ objectFit: "contain", borderRadius: 8, background: "rgba(255,255,255,0.05)" }}
+                />
               </div>
             )}
           </div>
@@ -356,7 +397,14 @@ export default function ConfiguracionPage() {
             />
             {form.heroFotoUrl && (
               <div style={{ marginTop: "0.5rem" }}>
-                <img src={form.heroFotoUrl} alt="Hero" style={{ width: "100%", height: 120, objectFit: "cover", borderRadius: 8 }} />
+                <Image
+                  src={form.heroFotoUrl}
+                  alt="Hero"
+                  width={800}
+                  height={120}
+                  unoptimized
+                  style={{ width: "100%", height: 120, objectFit: "cover", borderRadius: 8 }}
+                />
               </div>
             )}
             <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.3)", marginTop: "0.4rem" }}>

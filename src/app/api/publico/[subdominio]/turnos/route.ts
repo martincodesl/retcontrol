@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { subdominio: string } }
-) {
+function getSubdominio(req: NextRequest) {
+  const pathParts = new URL(req.url).pathname.split("/").filter(Boolean);
+  return pathParts[2];
+}
+
+export async function POST(req: NextRequest) {
   try {
     const barberia = await prisma.barberia.findUnique({
-      where: { subdominio: params.subdominio },
+      where: { subdominio: getSubdominio(req) },
     });
     if (!barberia) {
       return NextResponse.json({ error: "Barberia no encontrada" }, { status: 404 });

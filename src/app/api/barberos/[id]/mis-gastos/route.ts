@@ -1,16 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+function getId(req: NextRequest) {
+  const pathParts = new URL(req.url).pathname.split("/").filter(Boolean);
+  return pathParts[2];
+}
+
+export async function GET(req: NextRequest) {
   try {
+    const barberoId = getId(req);
     const { searchParams } = new URL(req.url);
     const desde = searchParams.get("desde");
     const hasta  = searchParams.get("hasta");
 
-    const where: any = { barberoId: params.id };
+    const where: any = { barberoId };
 
     if (desde && hasta) {
       where.fecha = {
@@ -31,11 +34,9 @@ export async function GET(
   }
 }
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(req: NextRequest) {
   try {
+    const barberoId = getId(req);
     const { nombre, monto, categoria } = await req.json();
 
     if (!nombre || !monto || !categoria) {
@@ -50,7 +51,7 @@ export async function POST(
         nombre,
         monto: Number(monto),
         categoria,
-        barberoId: params.id,
+        barberoId,
       },
     });
 
@@ -61,10 +62,7 @@ export async function POST(
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(req: NextRequest) {
   try {
     const { gastoId } = await req.json();
     await prisma.gastoBarbero.delete({ where: { id: gastoId } });

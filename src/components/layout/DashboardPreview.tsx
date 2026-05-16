@@ -19,7 +19,7 @@ export default function DashboardPreview() {
             <div className="preview-dots">
               <span className="dot-r" /><span className="dot-y" /><span className="dot-g" />
             </div>
-            <div className="preview-url">retcontrol.app/dashboard</div>
+            <div className="preview-url">retcontrol.com/dashboard</div>
           </div>
           <div className="preview-body">
 
@@ -106,7 +106,7 @@ export default function DashboardPreview() {
             { icon: "📅", text: "Gestion de turnos con calendario interactivo" },
             { icon: "✂️", text: "Control de barberos, horarios y especialidades" },
             { icon: "💈", text: "Catalogo de servicios con precios y duracion" },
-            { icon: "🔔", text: "Notificaciones automaticas por email al cliente" },
+            { icon: "🔔", text: "Notificaciones automaticas por whatsapp al cliente" },
           ].map((b) => (
             <div key={b.text} className="preview-bullet">
               <span className="preview-bullet-icon">{b.icon}</span>

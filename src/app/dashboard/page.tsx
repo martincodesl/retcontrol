@@ -80,11 +80,13 @@ export default async function DashboardPage() {
     { label: "Cancelaciones",    value: cancelaciones.toString(),       sub: "hoy",                        trend: cancelaciones > 0 ? "down" : "neu", icon: XCircle },
   ];
 
+  const usuario = session.user as { nombre?: string | null; email?: string | null };
+
   return (
     <div className="dash-content">
       <div className="dash-topbar">
         <div className="dash-topbar-title">
-          Bienvenido, {(session.user as any).nombre || session.user.email}
+          Bienvenido, {usuario.nombre || usuario.email}
         </div>
         <button className="dash-topbar-btn">+ Nuevo turno</button>
       </div>

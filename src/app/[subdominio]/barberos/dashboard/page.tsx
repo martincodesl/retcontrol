@@ -44,18 +44,7 @@ export default function DashboardBarberoPage() {
   const [turnos, setTurnos] = useState<Turno[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const session = localStorage.getItem("barbero_session");
-    if (!session) {
-      router.push(`/${subdominio}/barberos`);
-      return;
-    }
-    const barberoData = JSON.parse(session);
-    setBarbero(barberoData);
-    cargarTurnos(barberoData.id);
-  }, []);
-
-  const cargarTurnos = async (barberoId: string) => {
+  async function cargarTurnos(barberoId: string) {
     try {
       const hoy = new Date().toISOString().split("T")[0];
       const res = await fetch(`/api/barberos/${barberoId}/mis-turnos?fecha=${hoy}`);
@@ -66,7 +55,18 @@ export default function DashboardBarberoPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }
+
+  useEffect(() => {
+    const session = localStorage.getItem("barbero_session");
+    if (!session) {
+      router.push(`/${subdominio}/barberos`);
+      return;
+    }
+    const barberoData = JSON.parse(session);
+    setBarbero(barberoData);
+    cargarTurnos(barberoData.id);
+  }, []);
 
   const cerrarSesion = () => {
     localStorage.removeItem("barbero_session");

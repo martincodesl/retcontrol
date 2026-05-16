@@ -2,21 +2,24 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 
+function getId(req: NextRequest) {
+  const pathParts = new URL(req.url).pathname.split("/").filter(Boolean);
+  return pathParts[2];
+}
+
 // PATCH — editar servicio
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(req: NextRequest) {
   try {
     const session = await auth();
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
+    const servicioId = getId(req);
     const { nombre, descripcion, precio, duracion, color, activo } = await req.json();
 
     const servicio = await prisma.servicio.findFirst({
-      where: { id: params.id, barberiaId: session.user.id },
+      where: { id: servicioId, barberiaId: session.user.id },
     });
 
     if (!servicio) {
@@ -27,7 +30,7 @@ export async function PATCH(
     }
 
     const actualizado = await prisma.servicio.update({
-      where: { id: params.id },
+      where: { id: servicioId },
       data: {
         nombre:      nombre      ?? servicio.nombre,
         descripcion: descripcion ?? servicio.descripcion,
@@ -49,18 +52,16 @@ export async function PATCH(
 }
 
 // DELETE — eliminar servicio
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(req: NextRequest) {
   try {
     const session = await auth();
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
+    const servicioId = getId(req);
     const servicio = await prisma.servicio.findFirst({
-      where: { id: params.id, barberiaId: session.user.id },
+      where: { id: servicioId, barberiaId: session.user.id },
     });
 
     if (!servicio) {
@@ -70,7 +71,7 @@ export async function DELETE(
       );
     }
 
-    await prisma.servicio.delete({ where: { id: params.id } });
+    await prisma.servicio.delete({ where: { id: servicioId } });
 
     return NextResponse.json({ ok: true });
   } catch (error) {

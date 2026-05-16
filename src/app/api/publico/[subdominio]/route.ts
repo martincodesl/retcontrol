@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma"; // ajustá si tu ruta es distinta
 
-export async function GET(
-  req: Request,
-  { params }: { params: { subdominio: string } }
-) {
+function getSubdominio(req: Request) {
+  const pathParts = new URL(req.url).pathname.split("/").filter(Boolean);
+  return pathParts[2];
+}
+
+export async function GET(req: Request) {
   try {
-    const subdominio = params.subdominio?.toLowerCase().trim();
+    const subdominio = getSubdominio(req)?.toLowerCase().trim();
 
     if (!subdominio) {
       return NextResponse.json(

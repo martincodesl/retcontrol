@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { subdominio: string } }
-) {
+function getSubdominio(req: NextRequest) {
+  const pathParts = new URL(req.url).pathname.split("/").filter(Boolean);
+  return pathParts[2];
+}
+
+export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const barberoId  = searchParams.get("barberoId");
@@ -20,7 +22,7 @@ export async function GET(
 
     // Verificar que el barbero pertenece a esta barbería
     const barberia = await prisma.barberia.findUnique({
-      where: { subdominio: params.subdominio },
+      where: { subdominio: getSubdominio(req) },
     });
     if (!barberia) {
       return NextResponse.json({ error: "Barberia no encontrada" }, { status: 404 });

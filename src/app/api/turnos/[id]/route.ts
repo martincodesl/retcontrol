@@ -2,21 +2,24 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 
+function getId(req: NextRequest) {
+  const pathParts = new URL(req.url).pathname.split("/").filter(Boolean);
+  return pathParts[2];
+}
+
 // PATCH — actualizar estado del turno
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(req: NextRequest) {
   try {
     const session = await auth();
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
+    const turnoId = getId(req);
     const { estado } = await req.json();
 
     const turno = await prisma.turno.findFirst({
-      where: { id: params.id, barberiaId: session.user.id },
+      where: { id: turnoId, barberiaId: session.user.id },
     });
 
     if (!turno) {
@@ -27,7 +30,7 @@ export async function PATCH(
     }
 
     const actualizado = await prisma.turno.update({
-      where: { id: params.id },
+      where: { id: turnoId },
       data: { estado },
     });
 
@@ -42,18 +45,16 @@ export async function PATCH(
 }
 
 // DELETE — cancelar turno
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(req: NextRequest) {
   try {
     const session = await auth();
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
+    const turnoId = getId(req);
     const turno = await prisma.turno.findFirst({
-      where: { id: params.id, barberiaId: session.user.id },
+      where: { id: turnoId, barberiaId: session.user.id },
     });
 
     if (!turno) {
@@ -65,7 +66,7 @@ export async function DELETE(
 
     // No borramos, marcamos como cancelado
     await prisma.turno.update({
-      where: { id: params.id },
+      where: { id: turnoId },
       data: { estado: "CANCELADO" },
     });
 

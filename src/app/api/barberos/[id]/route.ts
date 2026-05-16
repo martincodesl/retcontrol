@@ -3,20 +3,23 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import bcrypt from "bcryptjs";
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+function getId(req: NextRequest) {
+  const pathParts = new URL(req.url).pathname.split("/").filter(Boolean);
+  return pathParts[2];
+}
+
+export async function PATCH(req: NextRequest) {
   try {
     const session = await auth();
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
+    const barberoId = getId(req);
     const { nombre, usuario, pin, especialidad, activo } = await req.json();
 
     const barbero = await prisma.barbero.findFirst({
-      where: { id: params.id, barberiaId: session.user.id },
+      where: { id: barberoId, barberiaId: session.user.id },
     });
 
     if (!barbero) {
@@ -39,7 +42,7 @@ export async function PATCH(
     }
 
     const actualizado = await prisma.barbero.update({
-      where: { id: params.id },
+      where: { id: barberoId },
       data,
       select: {
         id: true,
@@ -57,25 +60,23 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(req: NextRequest) {
   try {
     const session = await auth();
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
+    const barberoId = getId(req);
     const barbero = await prisma.barbero.findFirst({
-      where: { id: params.id, barberiaId: session.user.id },
+      where: { id: barberoId, barberiaId: session.user.id },
     });
 
     if (!barbero) {
       return NextResponse.json({ error: "Barbero no encontrado" }, { status: 404 });
     }
 
-    await prisma.barbero.delete({ where: { id: params.id } });
+    await prisma.barbero.delete({ where: { id: barberoId } });
 
     return NextResponse.json({ ok: true });
   } catch (error) {

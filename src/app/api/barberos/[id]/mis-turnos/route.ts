@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+function getId(req: NextRequest) {
+  const pathParts = new URL(req.url).pathname.split("/").filter(Boolean);
+  return pathParts[2];
+}
+
+export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const fecha     = searchParams.get("fecha");
     const desde     = searchParams.get("desde");
     const hasta     = searchParams.get("hasta");
 
-    console.log("mis-turnos params:", { fecha, desde, hasta });
-
-    const where: any = { barberoId: params.id };
+    const barberoId = getId(req);
+    const where: any = { barberoId };
 
     if (fecha) {
       // Filtro por día específico
