@@ -3,6 +3,35 @@ import Credentials from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
+// 💡 1. Extendemos los tipos de NextAuth para que reconozcan tus campos personalizados
+declare module "next-auth" {
+  interface User {
+    id?: string;
+    subdominio?: string;
+    plan?: string;
+    nombre?: string;
+  }
+  interface Session {
+    user: {
+      id: string;
+      subdominio?: string;
+      plan?: string;
+      nombre?: string;
+      email?: string;
+    };
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id?: string;
+    subdominio?: string;
+    plan?: string;
+    nombre?: string;
+  }
+}
+
+// Mantenemos tus tipos por si los usas en otras partes del proyecto
 type BarberiaUser = {
   id: string;
   email: string;
@@ -10,14 +39,6 @@ type BarberiaUser = {
   subdominio: string;
   plan: string;
   nombre: string;
-};
-
-type SessionUser = {
-  id: string;
-  subdominio?: string;
-  plan?: string;
-  nombre?: string;
-  email?: string;
 };
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -28,21 +49,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        const barberiaUser = user as BarberiaUser;
-        token.id = barberiaUser.id;
-        token.subdominio = barberiaUser.subdominio;
-        token.plan = barberiaUser.plan;
-        token.nombre = barberiaUser.nombre;
+        // Al extender el módulo arriba, ya no necesitas forzar tipos aquí
+        token.id = user.id;
+        token.subdominio = user.subdominio;
+        token.plan = user.plan;
+        token.nombre = user.nombre;
       }
       return token;
     },
     async session({ session, token }) {
-      if (token) {
-        const sessionUser = session.user as SessionUser;
-        sessionUser.id = token.id as string;
-        sessionUser.subdominio = token.subdominio;
-        sessionUser.plan = token.plan;
-        sessionUser.nombre = token.nombre;
+      if (token && session.user) {
+        // Ahora session.user y token tienen los tipos mapeados correctamente
+        session.user.id = token.id as string;
+        session.user.subdominio = token.subdominio;
+        session.user.plan = token.plan;
+        session.user.nombre = token.nombre;
       }
       return session;
     },
@@ -70,6 +91,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         if (!passwordValida) return null;
 
+        // Lo que retorna aquí coincide perfectamente con la interfaz User extendida arriba
         return {
           id: barberia.id,
           email: barberia.email,
