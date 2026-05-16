@@ -3,7 +3,7 @@ import Credentials from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
-// 💡 1. Extendemos los tipos de NextAuth para que reconozcan tus campos personalizados
+// 💡 Declaramos todo dentro del módulo global "next-auth"
 declare module "next-auth" {
   interface User {
     id: string;
@@ -11,6 +11,7 @@ declare module "next-auth" {
     plan?: string;
     nombre?: string;
   }
+  
   interface Session {
     user: {
       id: string;
@@ -18,12 +19,11 @@ declare module "next-auth" {
       plan?: string;
       nombre?: string;
       email?: string;
-      name?: string | null; // 💡 Agrega esta línea aquí
+      name?: string | null;
     };
   }
-}
 
-declare module "next-auth/jwt" {
+  // 💡 Movemos la interfaz JWT aquí adentro para que herede el contexto correcto
   interface JWT {
     id?: string;
     subdominio?: string;
@@ -31,6 +31,8 @@ declare module "next-auth/jwt" {
     nombre?: string;
   }
 }
+
+// ... El resto de tus tipos (como BarberiaUser) y la configuración de NextAuth continúan igual abajo
 
 // Mantenemos tus tipos por si los usas en otras partes del proyecto
 type BarberiaUser = {
