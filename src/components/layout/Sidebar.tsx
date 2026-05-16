@@ -132,7 +132,7 @@ export default function Sidebar() {
               />
             </div>
           ) : (
-            <div>
+            <div style={{ paddingLeft: "0.8rem" }}>
               <div className="sidebar-logo-name">RET<span>control</span></div>
               <div className="sidebar-logo-sub">
                 {subdominio ? `${subdominio}.retcontrol.com` : "app.retcontrol.com"}
