@@ -19,12 +19,12 @@ import {
 } from "lucide-react";
 
 const navItems = [
-  { label: "Dashboard",     href: "/dashboard",                icon: LayoutDashboard, section: "Principal" },
+  { label: "Dashboard",     href: "/dashboard",               icon: LayoutDashboard, section: "Principal" },
   { label: "Turnos",        href: "/dashboard/turnos",         icon: Calendar,        section: "Principal", badge: "" },
   { label: "Barberos",      href: "/dashboard/barberos",       icon: Scissors,        section: "Gestion" },
   { label: "Servicios",     href: "/dashboard/servicios",      icon: BookOpen,        section: "Gestion" },
   { label: "Finanzas",      href: "/dashboard/finanzas",       icon: TrendingUp,      section: "Mi Negocio" },
-  { label: "Mi Sitio",      href: "/dashboard/configuracion",  icon: Globe,           section: "Mi Negocio" },
+  { label: "Mi Sitio",      href: "/dashboard/sitio",          icon: Globe,           section: "Mi Negocio" },
   { label: "Configuracion", href: "/dashboard/configuracion",  icon: Settings,        section: "Mi Negocio" },
 ];
 
@@ -34,16 +34,18 @@ export default function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { data: session } = useSession();
 
-  const subdominio = session?.user?.subdominio as string | undefined;
-  const nombreBarberia = (session?.user?.nombre as string) || session?.user?.name || "Barbería";
+  const subdominio = session?.user?.subdominio;
+  const nombreBarberia = session?.user?.nombre || session?.user?.name || "Barbería";
+  const planUsuario = session?.user?.plan || "Pro";
 
+  // Lógica para el avatar del perfil del usuario (abajo)
   const getInitials = (name: string) => {
     const parts = name.split(" ").filter(Boolean);
     if (parts.length === 0) return "RC";
     if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
     return (parts[0][0] + parts[1][0]).toUpperCase();
   };
-  const avatarText = getInitials(nombreBarberia || (subdominio || "rc"));
+  const avatarText = getInitials(nombreBarberia);
 
   return (
     <>
@@ -85,18 +87,16 @@ export default function Sidebar() {
             const active = pathname === item.href;
             return (
               <Link
-  key={item.label}
-  href={item.href}
-  className={`sidebar-item ${active ? "sidebar-item-active" : ""}`}
-  title={collapsed ? item.label : ""}
->
-  <div className="sidebar-icon-wrapper">
-    <Icon size={17} />
-  </div>
-  {!collapsed && (
-    <span className="sidebar-label">{item.label}</span>
-  )}
-</Link>
+                key={item.label}
+                href={item.href}
+                className={`sidebar-item ${active ? "sidebar-item-active" : ""}`}
+                onClick={() => setMobileOpen(false)}
+              >
+                <div className="sidebar-icon-wrapper">
+                  <Icon size={17} />
+                </div>
+                <span className="sidebar-label">{item.label}</span>
+              </Link>
             );
           })}
         </nav>
@@ -104,7 +104,7 @@ export default function Sidebar() {
           <div className="sidebar-avatar">{avatarText}</div>
           <div>
             <div className="sidebar-profile-name">{nombreBarberia}</div>
-            <div className="sidebar-profile-role">Plan Pro</div>
+            <div className="sidebar-profile-role">Plan {planUsuario}</div>
           </div>
         </div>
       </aside>
@@ -120,13 +120,23 @@ export default function Sidebar() {
           {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
         </button>
 
-        {/* Logo */}
+        {/* Logo (Círculo removido) */}
+        {/* Logo corporativo dinámico */}
         <div className="sidebar-logo">
-          <div className="sidebar-avatar" style={{ flexShrink: 0 }}>{avatarText}</div>
-          {!collapsed && (
+          {collapsed ? (
+            <div className="sidebar-logo-collapsed-wrapper" style={{ display: "flex", justifyContent: "center", width: "100%" }}>
+              <img 
+                src="/retCONTROL.svg" // 👈 Cambia esto por la ruta real de tu logo en /public (ej: /logo.png, /favicon.ico)
+                alt="RETcontrol Logo" 
+                style={{ width: "24px", height: "24px", objectFit: "contain" }} 
+              />
+            </div>
+          ) : (
             <div>
               <div className="sidebar-logo-name">RET<span>control</span></div>
-              <div className="sidebar-logo-sub">{subdominio ? `${subdominio}.retcontrol.com` : "kings-cuts.retcontrol.app"}</div>
+              <div className="sidebar-logo-sub">
+                {subdominio ? `${subdominio}.retcontrol.com` : "app.retcontrol.com"}
+              </div>
             </div>
           )}
         </div>
@@ -145,18 +155,18 @@ export default function Sidebar() {
                   const active = pathname === item.href;
                   return (
                     <Link
-  key={item.label}
-  href={item.href}
-  className={`sidebar-item ${active ? "sidebar-item-active" : ""}`}
-  title={collapsed ? item.label : ""}
->
-  <div className="sidebar-icon-wrapper">
-    <Icon size={17} />
-  </div>
-  {!collapsed && (
-    <span className="sidebar-label">{item.label}</span>
-  )}
-</Link>
+                      key={item.label}
+                      href={item.href}
+                      className={`sidebar-item ${active ? "sidebar-item-active" : ""}`}
+                      title={collapsed ? item.label : ""}
+                    >
+                      <div className="sidebar-icon-wrapper">
+                        <Icon size={17} />
+                      </div>
+                      {!collapsed && (
+                        <span className="sidebar-label">{item.label}</span>
+                      )}
+                    </Link>
                   );
                 })}
               </div>
@@ -170,7 +180,7 @@ export default function Sidebar() {
             <div className="sidebar-avatar">{avatarText}</div>
             <div>
               <div className="sidebar-profile-name">{nombreBarberia}</div>
-              <div className="sidebar-profile-role">Plan Pro</div>
+              <div className="sidebar-profile-role">Plan {planUsuario}</div>
             </div>
           </div>
         )}
